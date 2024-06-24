@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+    server:
+        container_name: open-senior-server
+        #Dev mode
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: dev
+        command: ['pnpm', 'start:dev']
+        #Prod mode
+        # build:
+        #   context: .
+        #   dockerfile: Dockerfile
+        depends_on:
+            database:
+                condition: service_healthy
+        env_file:
+            - .env
+        ports:
+            - $PORT:3000
+        networks:
+            - open-senior-network
+
+    database:
+        container_name: open-senior-database
+        image: postgres:16-alpine
+        restart: always
+        environment:
+            POSTGRES_USER: $DB_USERNAME
+            POSTGRES_PASSWORD: $DB_PASSWORD
+            POSTGRES_DB: $DB_NAME
+        ports:
+            - $DB_PORT:5432
+        env_file:
+            - .env
+        volumes:
+            - .docker/db:/var/lib/postgresql
+        networks:
+            - open-senior-network
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redis:
+        container_name: open-senior-redis
+        image: redis:7-alpine
+        restart: always
+        command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PASSWORD
+        ports:
+            - $REDIS_PORT:6379
+        volumes:
+            - .docker/redis:/data
+        env_file:
+            - .env
+        networks:
+            - open-senior-network
+
+networks:
+    open-senior-network:

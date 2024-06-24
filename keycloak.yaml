@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+    postgres_keycloak:
+        image: postgres:11
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: keycloak
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: password
+        ports:
+            - '127.0.0.1:5433:5432'
+
+    keycloak:
+        image: quay.io/keycloak/keycloak:18.0.2
+        environment:
+            DB_VENDOR: POSTGRES
+            DB_ADDR: postgres_keycloak # <<< This is the address, change it to your external db ip/domain
+            DB_DATABASE: keycloak
+            DB_USER: keycloak
+            DB_SCHEMA: public
+            DB_PASSWORD: password
+            KEYCLOAK_ADMIN: admin
+            KEYCLOAK_ADMIN_PASSWORD: password
+            JAVA_OPTS: -Dkeycloak.profile=preview
+            KEYCLOAK_LOGLEVEL: DEBUG
+            ROOT_LOGLEVEL: DEBUG
+        command:
+            - start-dev
+        ports:
+            - 8080:8080
+            - 8443:8443
+        depends_on:
+            - postgres_keycloak
+
+volumes:
+    postgres_data:
+        driver: local
