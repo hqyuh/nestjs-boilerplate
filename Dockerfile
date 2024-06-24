@@ -15,12 +15,6 @@ COPY --chown=node:node pnpm-lock.yaml ./
 # Install dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
 
-# Copy the .env file here before running `pnpm run db`
-COPY --chown=node:node .env ./
-
-# Now run the db related script
-RUN pnpm run db
-
 # Copy the rest of your application
 COPY --chown=node:node . .
 

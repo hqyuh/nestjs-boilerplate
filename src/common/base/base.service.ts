@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { AbstractBaseService } from '@/common/base/base.abstract';
+import { UserEntity } from '@/apis/user/entities/user.entity';
 
 export abstract class BaseService<T extends BaseEntity> extends AbstractBaseService<T> {
     abstract notFoundMessage: string;
@@ -83,7 +84,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		const { 
 			limit = 10, 
 			page = 1, 
-			where = { ...options.where, ...options.filter }, 
+			where = options.filter,
 			select, 
 			withDeleted, 
 			loadEagerRelations, 

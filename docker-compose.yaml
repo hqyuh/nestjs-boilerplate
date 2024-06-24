@@ -1,13 +1,13 @@
 version: '3.8'
 services:
     server:
-        container_name: open-senior-server
+        container_name: nestjs-boilerplate-server
         #Dev mode
         build:
             context: .
             dockerfile: Dockerfile
             target: dev
-        command: ['pnpm', 'start:dev']
+        command: ['sh', '-c', 'pnpm run migration:run && pnpm run seed:run && pnpm run start:dev']
         #Prod mode
         # build:
         #   context: .
@@ -20,10 +20,10 @@ services:
         ports:
             - $PORT:3000
         networks:
-            - open-senior-network
+            - nestjs-boilerplate-network
 
     database:
-        container_name: open-senior-database
+        container_name: nestjs-boilerplate-database
         image: postgres:16-alpine
         restart: always
         environment:
@@ -37,7 +37,7 @@ services:
         volumes:
             - .docker/db:/var/lib/postgresql
         networks:
-            - open-senior-network
+            - nestjs-boilerplate-network
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready']
             interval: 10s
@@ -45,7 +45,7 @@ services:
             retries: 5
 
     redis:
-        container_name: open-senior-redis
+        container_name: nestjs-boilerplate-redis
         image: redis:7-alpine
         restart: always
         command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PASSWORD
@@ -56,7 +56,7 @@ services:
         env_file:
             - .env
         networks:
-            - open-senior-network
+            - nestjs-boilerplate-network
 
 networks:
-    open-senior-network:
+    nestjs-boilerplate-network:

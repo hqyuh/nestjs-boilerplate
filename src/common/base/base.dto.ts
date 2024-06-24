@@ -35,8 +35,4 @@ export class PaginationDto<T = BaseEntity> {
 		type: 'string'
 	})
 	filter?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
-
-	@IsOptional()
-	@ApiProperty({ description: 'Search', example: '' })
-	search?: string;
 }
