@@ -37,7 +37,7 @@ export class UserController {
 	@ApiBearerAuth()
 	@ApiGetAll(UserEntity, 'User')
 	getAll(@Query() query: PaginationDto) {
-		return this.userService.getAllPaginated(query);
+		return this.userService.getAllUserPaginated(query);
 	}
 
 	@Get(':id')

@@ -80,6 +80,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 	}
 
 	async getAllPaginated(options: FindPaginatedOptions<T>): Promise<IPaginationResponse<T>> {
+		console.log("🚀 ~ BaseService<T ~ getAllPaginated ~ options:", options)
 		const { 
 			limit = 10, 
 			page = 1, 
@@ -92,12 +93,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		} = options;
 		const take = limit === -1 ? undefined : limit;
 		const skip = limit === -1 ? undefined : limit * (+page - 1);
-
-		// const where = JSON.parse('{ "username": "test05@example.com" }');
-        // const order = JSON.parse('{ "createdAt": "DESC" }');
-
 		const findAndCountOptions = { where, order, relations, take, skip, loadEagerRelations, withDeleted, select };
-		console.log('🐔 =>  findAndCountOptions:', findAndCountOptions);
 		const [data, total] = await this.repository.findAndCount(findAndCountOptions);
 
 		return {

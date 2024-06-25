@@ -18,7 +18,7 @@ export class UserService extends IUserService {
 	constructor(
 		@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, 
 		@InjectRepository(Role) private readonly roleRepo: Repository<Role>,
-	private readonly cacheService: ICacheService) {
+		private readonly cacheService: ICacheService) {
 		super(userRepo);
 	}
 
@@ -54,6 +54,7 @@ export class UserService extends IUserService {
 	async getAllUserPaginated(
 		query: PaginationDto<BaseEntity>
 	): Promise<IPaginationResponse<UserEntity>> {
+		console.log("🚀 ~ UserService ~ query:", query)
 		return this.getAllPaginated(query);
 	}
 
