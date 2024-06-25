@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
 import { Repository } from 'typeorm';
@@ -9,12 +9,15 @@ import { PaginationDto } from '@/common/base/base.dto';
 import { BaseEntity } from '@/common/base/base.entity';
 import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
+import { Role } from '@/apis/roles/entities/role.entity';
 
 @Injectable()
 export class UserService extends IUserService {
 	notFoundMessage = 'User not found';
 
-	constructor(@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, 
+	constructor(
+		@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, 
+		@InjectRepository(Role) private readonly roleRepo: Repository<Role>,
 	private readonly cacheService: ICacheService) {
 		super(userRepo);
 	}
@@ -36,7 +39,16 @@ export class UserService extends IUserService {
 	}
 
 	async createUser(createUserDto: CreateUserDto) {
-		return this.create(createUserDto);
+		// TODO: The password will be automatically generated or entered by the user
+		createUserDto.password = 'password';
+		const role = await this.roleRepo.findOne({ where: { id: createUserDto.roleId } });
+
+		if (!role) throw new NotFoundException('Role not found');
+
+		return this.create({
+			...createUserDto,
+			role
+		});
 	}
 
 	async getAllUserPaginated(

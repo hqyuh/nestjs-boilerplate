@@ -6,10 +6,11 @@ import { IUserService } from './user.interface';
 import { UserService } from './user.service';
 import { CacheModule } from '@/module/cache/cache.module';
 import { AbilityModule } from '@/module/ability/ability.module';
+import { Role } from '@/apis/roles/entities/role.entity';
 // import { AbilityModule } from '@/module/ability/ability.module';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([UserEntity]), CacheModule, AbilityModule],
+	imports: [TypeOrmModule.forFeature([UserEntity, Role]), CacheModule, AbilityModule],
 	controllers: [UserController],
 	providers: [
 		{

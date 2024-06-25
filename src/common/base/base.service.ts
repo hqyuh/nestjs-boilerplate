@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { AbstractBaseService } from '@/common/base/base.abstract';
-import { UserEntity } from '@/apis/user/entities/user.entity';
 
 export abstract class BaseService<T extends BaseEntity> extends AbstractBaseService<T> {
     abstract notFoundMessage: string;
@@ -94,7 +93,11 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		const take = limit === -1 ? undefined : limit;
 		const skip = limit === -1 ? undefined : limit * (+page - 1);
 
+		// const where = JSON.parse('{ "username": "test05@example.com" }');
+        // const order = JSON.parse('{ "createdAt": "DESC" }');
+
 		const findAndCountOptions = { where, order, relations, take, skip, loadEagerRelations, withDeleted, select };
+		console.log('🐔 =>  findAndCountOptions:', findAndCountOptions);
 		const [data, total] = await this.repository.findAndCount(findAndCountOptions);
 
 		return {

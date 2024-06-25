@@ -25,7 +25,7 @@ export class PaginationDto<T = BaseEntity> {
 		example: '{ "createdAt": "ASC" }',
 		type: 'string'
 	})
-	order?: FindOptionsOrder<T>;
+	order?: FindOptionsOrder<T> | any;
 
 	@IsOptional()
 	@Transform(({ value }) => JSON.parse(value || '{}'))
@@ -34,5 +34,5 @@ export class PaginationDto<T = BaseEntity> {
 		example: '{ "name": "string" }',
 		type: 'string'
 	})
-	filter?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
+	filter?: FindOptionsWhere<T> | FindOptionsWhere<T>[] | any;
 }
