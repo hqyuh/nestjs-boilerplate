@@ -21,7 +21,6 @@ export class AbilitiesGuard implements CanActivate {
 			});
 			return true;
 		} catch (error) {
-			console.log('🐔 =>  error:', error);
 			if (error instanceof ForbiddenError) {
 				// error.message
 				throw new ForbiddenException('You do not have permission to perform this action.');

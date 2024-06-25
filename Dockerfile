@@ -18,6 +18,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
 # Copy the rest of your application
 COPY --chown=node:node . .
 
+ENV NODE_ENV production
+
 FROM base as dev
 EXPOSE 3000
 

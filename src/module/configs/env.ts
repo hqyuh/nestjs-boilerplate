@@ -4,6 +4,6 @@ import { config } from 'dotenv';
 config();
 
 const configService = new ConfigService();
-export const adminUsername = configService.get<string>('ADMIN_USERNAME');
-export const adminPassword = configService.get<string>('ADMIN_PASSWORD');
-export const schema = configService.get<string>('DB_SCHEMA');
+// export const schema = configService.get<string>('DB_SCHEMA');
+
+export const getEnv = () => process.env.NODE_ENV === 'production' ? '.env.production' : '.env';

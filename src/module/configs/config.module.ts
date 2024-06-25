@@ -1,12 +1,15 @@
+import { getEnv } from '@/module/configs/env';
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+
+
 
 @Module({
 	imports: [
 		NestConfigModule.forRoot({
 			isGlobal: true,
-			envFilePath: '.env',
+			envFilePath: getEnv(),
 			validationSchema: Joi.object({
 				NODE_ENV: Joi.string(),
 				PORT: Joi.number(),
