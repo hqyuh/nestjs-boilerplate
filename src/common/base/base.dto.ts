@@ -19,7 +19,7 @@ export class PaginationDto<T = BaseEntity> {
 	page?: number;
 
 	@IsOptional()
-	@Transform(({ value }) => JSON.parse(value || '{}'))
+	@Transform(({ value }) => JSON.parse(value))
 	@ApiProperty({
 		description: 'Sort by field',
 		example: '{ "createdAt": "ASC" }',
@@ -28,10 +28,10 @@ export class PaginationDto<T = BaseEntity> {
 	order?: FindOptionsOrder<T>;
 
 	@IsOptional()
-	@Transform(({ value }) => JSON.parse(value || '{}'))
+	@Transform(({ value }) => JSON.parse(value))
 	@ApiProperty({
 		description: 'Filter by field',
-		example: '{ "name": "string" }',
+		example: '{ "username": "hqh@example.com" }',
 		type: 'string'
 	})
 	filter?: FindOptionsWhere<T> | FindOptionsWhere<T>[];

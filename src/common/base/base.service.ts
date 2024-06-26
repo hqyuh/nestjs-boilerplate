@@ -80,7 +80,6 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 	}
 
 	async getAllPaginated(options: FindPaginatedOptions<T>): Promise<IPaginationResponse<T>> {
-		console.log("🚀 ~ BaseService<T ~ getAllPaginated ~ options:", options)
 		const { 
 			limit = 10, 
 			page = 1, 

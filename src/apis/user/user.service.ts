@@ -54,7 +54,6 @@ export class UserService extends IUserService {
 	async getAllUserPaginated(
 		query: PaginationDto<BaseEntity>
 	): Promise<IPaginationResponse<UserEntity>> {
-		console.log("🚀 ~ UserService ~ query:", query)
 		return this.getAllPaginated(query);
 	}
 
