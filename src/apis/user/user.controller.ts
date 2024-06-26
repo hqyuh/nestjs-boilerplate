@@ -28,6 +28,7 @@ export class UserController {
 	@Post()
 	@ApiBearerAuth()
 	@ApiCreate(UserEntity, 'User')
+	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
 	@CheckAbilities({ action: PermissionEnum.CREATE, subject: UserEntity })
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.createUser(createUserDto);
@@ -36,15 +37,17 @@ export class UserController {
 	@Get()
 	@ApiBearerAuth()
 	@ApiGetAll(UserEntity, 'User')
+	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
+	@CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
 	getAll(@Query() query: PaginationDto) {
 		return this.userService.getAllUserPaginated(query);
 	}
 
 	@Get(':id')
 	@ApiBearerAuth()
+	@ApiGetOne(UserEntity, 'User')
 	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
 	@CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
-	@ApiGetOne(UserEntity, 'User')
 	getOne(@Param('id') id: number) {
 		return this.userService.getOneUserById(id);
 	}
@@ -52,6 +55,8 @@ export class UserController {
 	@Patch(':id')
 	@ApiBearerAuth()
 	@ApiUpdate(UserEntity, 'User')
+	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
+	@CheckAbilities({ action: PermissionEnum.UPDATE, subject: UserEntity })
 	update(@Param('id') id: number, @Body() updateUserDto: UpdateUserByIdDto) {
 		return this.userService.updateUserById(id, updateUserDto);
 	}
@@ -59,6 +64,8 @@ export class UserController {
 	@Delete(':id')
 	@ApiBearerAuth()
 	@ApiDelete(UserEntity, 'User')
+	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
+	@CheckAbilities({ action: PermissionEnum.DELETE, subject: UserEntity })
 	remove(@Param('id') id: number) {
 		return this.userService.removeUserById(id);
 	}

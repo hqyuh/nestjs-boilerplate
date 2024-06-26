@@ -1,6 +1,7 @@
-import { MsgIds, logger } from '../logger/logger';
 import { applyDecorators } from '@nestjs/common';
 import * as validator from 'class-validator';
+
+import { MsgIds, logger } from '../logger/logger';
 
 export const IsString = (validationOptions?: validator.ValidationOptions) =>
 	applyDecorators(

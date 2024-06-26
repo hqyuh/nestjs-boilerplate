@@ -1,10 +1,10 @@
 import { AppModule } from '@/app.module';
+import { MsgIds, logger } from '@/common/logger/logger';
+import { ValidationPipe } from '@/common/pipes/validation.pipe';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { MsgIds, logger } from '@/common/logger/logger';
-import { ValidationPipe } from '@/common/pipes/validation.pipe';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);

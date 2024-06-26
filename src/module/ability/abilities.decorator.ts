@@ -1,5 +1,6 @@
 import { PermissionEnum } from '@/apis/permissions/permission.enum';
 import { SetMetadata } from '@nestjs/common/decorators';
+
 import { Subjects } from './ability.factory';
 
 export const CHECK_ABILITY = 'check_ability';

@@ -13,7 +13,6 @@ import { GlobalResponseError } from './global.response.error';
 export class GlobalExceptionFilter implements ExceptionFilter {
 	logger = new Logger(GlobalExceptionFilter.name);
 	catch(exception: unknown, host: ArgumentsHost) {
-		console.log("🚀 ~ GlobalExceptionFilter ~ exception:", exception)
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
 		const request = ctx.getRequest();

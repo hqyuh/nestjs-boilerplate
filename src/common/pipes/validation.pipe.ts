@@ -35,7 +35,7 @@ export class ValidationPipe implements PipeTransform<any> {
 	private buildError(errors: any) {
 		const result = {};
 		errors.forEach((el: any) => {
-			let prop = el.property;
+			const prop = el.property;
 			Object.entries(el.constraints).forEach((constraint) => {
 				result[prop + '-' + constraint[0]] = `${constraint[1]}`;
 			});

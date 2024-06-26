@@ -1,12 +1,12 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AppService } from './app.service';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthStrategy } from './apis/auth/auth.const';
-import { AbilitiesGuard } from './module/ability/abilities.guard';
 import { PermissionEnum } from './apis/permissions/permission.enum';
 import { UserEntity } from './apis/user/entities/user.entity';
+import { AppService } from './app.service';
 import { CheckAbilities } from './module/ability/abilities.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { AbilitiesGuard } from './module/ability/abilities.guard';
 
 @Controller()
 export class AppController {

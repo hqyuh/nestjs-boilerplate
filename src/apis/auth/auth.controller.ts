@@ -1,6 +1,6 @@
 import { ApiController } from '@/common/base/base.swagger';
 import { User } from '@/common/decorator/user.decorator';
-import { Body, Controller, Get, HttpCode, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserEntity } from '../user/entities/user.entity';
 import { AuthStrategy } from './auth.const';
