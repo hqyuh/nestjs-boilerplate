@@ -1,15 +1,15 @@
+import { Role } from '@/apis/roles/entities/role.entity';
+import { PaginationDto } from '@/common/base/base.dto';
+import { BaseEntity } from '@/common/base/base.entity';
+import { ICacheService } from '@/module/cache/cache.interface';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
 import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
 import { UserEntity } from './entities/user.entity';
 import { IUserService } from './user.interface';
-import { CreateUserDto } from './dto/create-user.dto';
-import { PaginationDto } from '@/common/base/base.dto';
-import { BaseEntity } from '@/common/base/base.entity';
-import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
-import { ICacheService } from '@/module/cache/cache.interface';
-import { Role } from '@/apis/roles/entities/role.entity';
 
 @Injectable()
 export class UserService extends IUserService {

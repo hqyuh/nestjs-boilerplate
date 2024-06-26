@@ -3,7 +3,7 @@ import * as winston from 'winston';
 import * as WinstonDaily from 'winston-daily-rotate-file';
 
 const LogFileName = {
-	esgServer: 'rbac-server'
+	nestjsBoilerPlateServer: 'nestjs-boilerplate-server'
 } as const;
 
 type LogFileNameType = (typeof LogFileName)[keyof typeof LogFileName];
@@ -66,7 +66,7 @@ class WinstonLogger {
 	private _logFormat: winston.Logform.Format;
 
 	constructor(
-		name: LogFileNameType = 'rbac-server',
+		name: LogFileNameType = 'nestjs-boilerplate-server',
 		dir = './logs',
 		level = 'info',
 		maxSize = '10m',

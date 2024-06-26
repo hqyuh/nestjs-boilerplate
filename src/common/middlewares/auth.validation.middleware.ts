@@ -1,6 +1,6 @@
-import { Injectable, NestMiddleware, BadRequestException } from '@nestjs/common';
-import { Response, NextFunction } from 'express';
+import { BadRequestException, Injectable, NestMiddleware } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
+import { NextFunction, Response } from 'express';
 import { LoginUserDto } from './../../apis/auth/dto/login-user.dto';
 @Injectable()
 export class AuthValidationMiddleware implements NestMiddleware {
@@ -17,7 +17,9 @@ export class AuthValidationMiddleware implements NestMiddleware {
 			await validateOrReject(login);
 		} catch (errs) {
 			errs.forEach((err: any) => {
-				Object.values(err.constraints).forEach((constraint) => errors.push(constraint));
+				Object.values(err.constraints).forEach((message: string) => {
+					return errors.push(`${err.property}: ${message}`.replace('{property}', ''));
+				});
 			});
 		}
 

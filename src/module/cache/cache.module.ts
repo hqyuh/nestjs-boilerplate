@@ -1,9 +1,9 @@
+import { MetadataKey } from '@/common/constant/constants';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ICacheService } from './cache.interface';
 import { CacheService } from './cache.service';
-import { MetadataKey } from '@/common/constant/constants';
 
 @Global()
 @Module({

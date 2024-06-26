@@ -33,7 +33,7 @@ services:
         ports:
             - $DB_PORT:5432
         env_file:
-            - .env
+            - .env.production
         volumes:
             - .docker/db:/var/lib/postgresql
         networks:
@@ -54,7 +54,7 @@ services:
         volumes:
             - .docker/redis:/data
         env_file:
-            - .env
+            - .env.production
         networks:
             - nestjs-boilerplate-network
 

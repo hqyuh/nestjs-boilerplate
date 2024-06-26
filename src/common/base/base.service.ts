@@ -1,3 +1,4 @@
+import { AbstractBaseService } from '@/common/base/base.abstract';
 import { BaseEntity } from '@/common/base/base.entity';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { extend } from 'lodash';
@@ -9,7 +10,6 @@ import {
 	UpdateResult
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { AbstractBaseService } from '@/common/base/base.abstract';
 
 export abstract class BaseService<T extends BaseEntity> extends AbstractBaseService<T> {
     abstract notFoundMessage: string;
