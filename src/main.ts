@@ -1,4 +1,5 @@
 import { AppModule } from '@/app.module';
+import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
 import { MsgIds, logger } from '@/common/logger/logger';
 import { ValidationPipe } from '@/common/pipes/validation.pipe';
 import { setupSwagger } from '@/common/swagger';
@@ -8,6 +9,8 @@ import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+
+	app.setGlobalPrefix(GLOBAL_PATH);
 
 	app.useGlobalPipes(new ValidationPipe());
 
@@ -32,7 +35,7 @@ async function bootstrap() {
 		const parameters = {
 			port,
 			environment: nodeEnv,
-			documentation: `${url}/api/docs`
+			documentation: `${url}/${DOCUMENT_PATH}`
 		};
 		logger.writeWithParameter(MsgIds.M002001, parameters);
 	});

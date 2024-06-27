@@ -19,6 +19,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 		let message = (exception as any).response
 		? (exception as any).response.message
 		: (exception as any).message.message;
+
 		let code = 'HttpException';
 		let status = HttpStatus.INTERNAL_SERVER_ERROR;
 

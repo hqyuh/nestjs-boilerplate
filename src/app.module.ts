@@ -4,10 +4,11 @@ import { providers } from '@/app.provider';
 import { LoggerMiddleware } from '@/common/middlewares/log.middlewares';
 import { ConfigModule } from '@/module/configs/config.module';
 import { DatabaseModule } from '@/module/database/database.module';
+import { RateLimitModule } from '@/module/ratelimit/ratelimit.module';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AbilityModule } from './module/ability/ability.module';
 @Module({
-	imports: [ConfigModule, DatabaseModule, ApiModule, AbilityModule],
+	imports: [ConfigModule, DatabaseModule, ApiModule, AbilityModule, RateLimitModule],
 	controllers: [AppController],
 	providers
 })

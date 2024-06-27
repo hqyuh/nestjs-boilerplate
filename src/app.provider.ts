@@ -1,5 +1,6 @@
 import { ClassSerializerInterceptor, Provider } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './common/exceptions/global.filter.error';
@@ -14,6 +15,7 @@ export const providers: Provider[] = [
 	// 	provide: APP_PIPE,
 	// 	useClass: ValidationPipe
 	// },
+	{ provide: APP_GUARD, useClass: ThrottlerGuard },
 	{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
 	{ provide: APP_INTERCEPTOR, useClass: FormatResponseInterceptor },
 	{ provide: APP_FILTER, useClass: GlobalExceptionFilter }

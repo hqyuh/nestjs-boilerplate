@@ -1,17 +1,18 @@
 {
     "cSpell.words": [
-        "casl",
-        "commitlint",
-        "cqrs",
-        "datas",
-        "exceljs",
-        "hygen",
-        "libphonenumber",
-        "metatype",
-        "nestjs",
-        "Parens",
-        "trivago",
-        "typeorm"
+      "casl",
+      "commitlint",
+      "cqrs",
+      "datas",
+      "exceljs",
+      "hygen",
+      "libphonenumber",
+      "metatype",
+      "nestjs",
+      "Parens",
+      "ratelimit",
+      "trivago",
+      "typeorm"
     ],
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
