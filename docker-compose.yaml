@@ -19,8 +19,8 @@ services:
             - .env.production
         ports:
             - $PORT:3000
-        networks:
-            - nestjs-boilerplate-network
+        # networks:
+        #     - nestjs-boilerplate-network
 
     database:
         container_name: nestjs-boilerplate-database
@@ -36,13 +36,23 @@ services:
             - .env.production
         volumes:
             - .docker/db:/var/lib/postgresql
-        networks:
-            - nestjs-boilerplate-network
         healthcheck:
             test: ['CMD-SHELL', 'pg_isready']
             interval: 10s
             timeout: 5s
             retries: 5
+        # networks:
+        #     - nestjs-boilerplate-network
+
+    pgadmin:
+        container_name: nestjs-boilerplate-pgadmin
+        image: dpage/pgadmin4:latest
+        environment:
+            PGADMIN_DEFAULT_EMAIL: hqh@example.com
+            PGADMIN_DEFAULT_PASSWORD: root
+        ports:
+            - 5050:80
+        restart: always
 
     redis:
         container_name: nestjs-boilerplate-redis
@@ -55,8 +65,13 @@ services:
             - .docker/redis:/data
         env_file:
             - .env.production
-        networks:
-            - nestjs-boilerplate-network
+        # networks:
+        #     - nestjs-boilerplate-network
 
 networks:
-    nestjs-boilerplate-network:
+    default:
+        name: nestjs-boilerplate-network
+
+volumes:
+    postgres_data:
+        driver: local
