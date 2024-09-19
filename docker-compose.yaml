@@ -7,7 +7,7 @@ services:
             context: .
             dockerfile: Dockerfile
             target: dev
-        command: ['sh', '-c', 'pnpm run db && pnpm run start:dev']
+        command: ['sh', '-c', 'pnpm run db && pnpm run start:prod']
         #Prod mode
         # build:
         #   context: .

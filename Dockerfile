@@ -1,34 +1,35 @@
+# Base stage
 FROM node:20-alpine as base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-RUN corepack enable
+# Enable corepack, install NestJS CLI, and set working directory
+RUN corepack enable && \
+    npm i -g @nestjs/cli
+
 WORKDIR /app
 
-# Install NestJS CLI globally
-RUN npm i -g @nestjs/cli
+# Copy package manager files and install dependencies
+COPY --chown=node:node package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Copy necessary files for installation
-COPY --chown=node:node package.json ./
-COPY --chown=node:node pnpm-lock.yaml ./
-
-# Install dependencies
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
-
-# Copy the rest of your application
+# Copy the rest of your application code
 COPY --chown=node:node . .
 
+# Set environment for production
 ENV NODE_ENV production
 
+# Development stage
 FROM base as dev
 EXPOSE 3000
+CMD ["pnpm", "start:dev"]
 
+# Production stage
 FROM base as prod
-# Build your application
-RUN pnpm build
+# Build application and remove development dependencies in one RUN
+RUN pnpm build && pnpm prune --prod --config.ignore-scripts=true
 
-# Remove development dependencies
-RUN pnpm prune --prod --config.ignore-scripts=true
 EXPOSE 3000
 
+# Set production start command
 CMD ["pnpm", "start:prod"]

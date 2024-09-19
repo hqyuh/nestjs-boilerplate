@@ -1,12 +1,12 @@
 import { INestApplication, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import {
-	SWAGGER_API_ROOT,
-	SWAGGER_API_NAME,
-	SWAGGER_API_DESCRIPTION,
 	SWAGGER_API_CURRENT_VERSION,
-	SWAGGER_API_PORT
+	SWAGGER_API_DESCRIPTION,
+	SWAGGER_API_NAME,
+	SWAGGER_API_PORT,
+	SWAGGER_API_ROOT
 } from './swagger.const';
 
 export const setupSwagger = (app: INestApplication) => {
