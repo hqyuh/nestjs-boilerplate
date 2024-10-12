@@ -1,18 +1,20 @@
 import { applyDecorators } from '@nestjs/common';
 import * as validator from 'class-validator';
 
-import { MsgIds, logger } from '../logger/logger';
+import { translate } from '@/module/i18n/i18n.helper';
+import { logger, MsgIds } from '../logger/logger';
 
-export const IsString = (validationOptions?: validator.ValidationOptions) =>
-	applyDecorators(
-		validator.IsString({ ...validationOptions, message: logger.getMessage(MsgIds.M001001) })
+export const IsString = (validationOptions?: validator.ValidationOptions) => {
+	return applyDecorators(
+		validator.IsString({ ...validationOptions, message: translate('validation.IS_STRING') })
 	);
+};
 
 export const IsNotEmpty = (validationOptions?: validator.ValidationOptions) =>
 	applyDecorators(
 		validator.IsNotEmpty({
 			...validationOptions,
-			message: logger.getMessage(MsgIds.M001002)
+			message: translate('validation.IS_NOT_EMPTY')
 		})
 	);
 

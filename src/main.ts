@@ -1,7 +1,6 @@
 import { AppModule } from '@/app.module';
 import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
 import { MsgIds, logger } from '@/common/logger/logger';
-import { ValidationPipe } from '@/common/pipes/validation.pipe';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -11,8 +10,6 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	app.setGlobalPrefix(GLOBAL_PATH);
-
-	app.useGlobalPipes(new ValidationPipe());
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<string>('PORT') || 3000;

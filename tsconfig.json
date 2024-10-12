@@ -1,4 +1,8 @@
 {
+	// "ts-node": {
+	// 	"files": true
+	// },
+	// "files": ["src/main.ts", "src/common/types/base.d.ts", "src/apis/auth/auth.d.ts"],
 	"compilerOptions": {
 		"module": "commonjs",
 		"declaration": true,
@@ -26,5 +30,6 @@
 			"@apis/*": ["src/apis/*"],
 			"packageJson": ["package.json"]
 		}
-	}
+	},
+	"include": ["src/**/*.ts", "src/**/**/*.d.ts", "test/**/*"]
 }

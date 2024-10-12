@@ -15,9 +15,14 @@ export class AuthValidationMiddleware implements NestMiddleware {
 
 		try {
 			await validateOrReject(login);
-		} catch (errs) {
+		} catch (errs: any) {
+			console.log('🚀 ~ AuthValidationMiddleware ~ use ~ errs:', errs);
 			errs.forEach((err: any) => {
-				Object.values(err.constraints).forEach((message: string) => {
+				Object.values(err.constraints).forEach((message: any) => {
+					console.log(
+						'🚀 ~ AuthValidationMiddleware ~ Object.values ~ message:',
+						message
+					);
 					return errors.push(`${err.property}: ${message}`.replace('{property}', ''));
 				});
 			});
