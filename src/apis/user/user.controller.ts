@@ -9,16 +9,26 @@ import {
 } from '@/common/base/base.swagger';
 
 import { CheckAbilities } from '@/module/ability/abilities.decorator';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { AbilitiesGuard } from '@/module/ability/abilities.guard';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Post,
+	Query,
+	UseGuards
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthStrategy } from '../auth/auth.const';
 import { PermissionEnum } from '../permissions/permission.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
 import { UserEntity } from './entities/user.entity';
 import { IUserService } from './user.interface';
-import { AuthGuard } from '@nestjs/passport';
-import { AuthStrategy } from '../auth/auth.const';
-import { AbilitiesGuard } from '@/module/ability/abilities.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
 @ApiController('User')

@@ -1,24 +1,26 @@
 {
-    "cSpell.words": [
-      "casl",
-      "commitlint",
-      "cqrs",
-      "datas",
-      "exceljs",
-      "hygen",
-      "libphonenumber",
-      "metatype",
-      "nestjs",
-      "Parens",
-      "ratelimit",
-      "trivago",
-      "typeorm"
-    ],
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "always",
-      "source.organizeImports": "always",
-      "source.sortMembers": "always",
-      "source.addMissingImports": "always"
-  }
+	"cSpell.words": [
+		"camelcase",
+		"casl",
+		"commitlint",
+		"cqrs",
+		"datas",
+		"exceljs",
+		"hygen",
+		"libphonenumber",
+		"metatype",
+		"nestjs",
+		"Parens",
+		"ratelimit",
+		"trivago",
+		"typeorm"
+	],
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "always",
+		"source.organizeImports": "always",
+		"source.sortMembers": "always",
+		"source.addMissingImports": "always"
+	}
 }

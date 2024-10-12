@@ -1,11 +1,10 @@
-import { Inject } from "@nestjs/common";
-import { ICacheService } from "./cache.interface";
+import { Inject } from '@nestjs/common';
+import { ICacheService } from './cache.interface';
 import Redis from 'ioredis';
-import { MetadataKey } from "@/common/constant/constants";
+import { MetadataKey } from '@/common/constant/constants';
 
 export class CacheService extends ICacheService {
-
-    constructor(@Inject(MetadataKey.REDIS) private redis: Redis) {
+	constructor(@Inject(MetadataKey.REDIS) private redis: Redis) {
 		super();
 	}
 
@@ -26,5 +25,4 @@ export class CacheService extends ICacheService {
 	keys(prefix: string) {
 		return this.redis.keys(`${prefix}:*`);
 	}
-    
 }

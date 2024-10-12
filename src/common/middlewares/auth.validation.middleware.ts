@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express';
 import { LoginUserDto } from './../../apis/auth/dto/login-user.dto';
 @Injectable()
 export class AuthValidationMiddleware implements NestMiddleware {
-	async use(req: Request, res: Response, next: NextFunction) {
+	async use(req: Request, _res: Response, next: NextFunction) {
 		const body: any = req.body;
 		const login = new LoginUserDto();
 		const errors: any = [];

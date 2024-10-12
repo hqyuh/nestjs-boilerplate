@@ -68,7 +68,7 @@ class WinstonLogger {
 	constructor(
 		name: LogFileNameType = 'nestjs-boilerplate-server',
 		dir = './logs',
-		level = 'info',
+		_level = 'info',
 		maxSize = '10m',
 		maxFiles = '30d'
 	) {
@@ -171,7 +171,7 @@ class WinstonLogger {
 				error
 			});
 			return true;
-		} catch (err) {
+		} catch (_err) {
 			return false;
 		}
 	}

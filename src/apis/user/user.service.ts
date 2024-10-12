@@ -16,9 +16,10 @@ export class UserService extends IUserService {
 	notFoundMessage = 'User not found';
 
 	constructor(
-		@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>, 
+		@InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
 		@InjectRepository(Role) private readonly roleRepo: Repository<Role>,
-		private readonly cacheService: ICacheService) {
+		private readonly cacheService: ICacheService
+	) {
 		super(userRepo);
 	}
 

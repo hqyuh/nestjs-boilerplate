@@ -22,6 +22,5 @@
 			"@/*": ["src/*"],
 			"packageJson": ["package.json"]
 		}
-	},
-	"files": ["src/common/types/base.d.ts", "src/apis/auth/auth.d.ts"]
+	}
 }

@@ -20,15 +20,17 @@ export class AuthService extends IAuthService {
 		const payload: JwtPayload = {
 			id: user.id
 		};
-		
+
 		const { accessToken, refreshToken } = await this.generateToken(payload);
-		return { user,  accessToken, refreshToken };
+		return { user, accessToken, refreshToken };
 	}
-  
+
 	async refreshToken(refreshTokenDto: RefreshTokenDto) {
 		const data = await this.jwtService.verify(refreshTokenDto.refreshToken);
 
-		const isCheckBlackListedRefreshToken = await this.cacheService.get(refreshTokenDto.refreshToken);
+		const isCheckBlackListedRefreshToken = await this.cacheService.get(
+			refreshTokenDto.refreshToken
+		);
 
 		if (isCheckBlackListedRefreshToken) {
 			// TODO: handle show error message
@@ -40,7 +42,7 @@ export class AuthService extends IAuthService {
 			id: data.id
 		};
 
-		return  await this.generateToken(payload);
+		return await this.generateToken(payload);
 	}
 
 	private async generateToken(payload: JwtPayload): Promise<TokenDto> {
@@ -49,11 +51,11 @@ export class AuthService extends IAuthService {
 
 		const [accessToken, refreshToken] = await Promise.all([
 			this.jwtService.sign(payload, {
-				expiresIn: expiresInAccessToken,
-			  }),
-			  this.jwtService.sign(payload, {
-				expiresIn: expiresInRefreshToken,
-			  })
+				expiresIn: expiresInAccessToken
+			}),
+			this.jwtService.sign(payload, {
+				expiresIn: expiresInRefreshToken
+			})
 		]);
 
 		return { accessToken, refreshToken };
@@ -62,7 +64,7 @@ export class AuthService extends IAuthService {
 	async logout(refreshTokenDto: RefreshTokenDto) {
 		const data = await this.jwtService.verify(refreshTokenDto.refreshToken);
 
-		const currentTime = Math.floor(Date.now() / 1000)
+		const currentTime = Math.floor(Date.now() / 1000);
 		const refreshToken = refreshTokenDto.refreshToken;
 
 		const expiredTime = data.exp - currentTime;
@@ -72,5 +74,4 @@ export class AuthService extends IAuthService {
 		// TODO: handle show response logout
 		return {};
 	}
-
 }

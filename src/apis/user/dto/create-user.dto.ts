@@ -29,5 +29,5 @@ export class CreateUserDto {
 	@ApiProperty({ description: 'Role Id', default: 1 })
 	@IsInt()
 	@IsNotEmpty()
-    roleId: number;
+	roleId: number;
 }

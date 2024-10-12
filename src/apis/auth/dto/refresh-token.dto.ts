@@ -8,7 +8,6 @@ export class RefreshTokenDto {
 	refreshToken: string;
 }
 
-
 export class TokenDto extends RefreshTokenDto {
 	accessToken: string;
 }
