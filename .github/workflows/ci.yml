@@ -21,8 +21,8 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  pnpm install
+                  npm install
 
             - name: Run tests
               run: |
-                  pnpm test
+                  npm test

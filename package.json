@@ -142,6 +142,10 @@
 			"^@apis/(.*)$": "<rootDir>/apis/$1",
 			"^packageJson$": "<rootDir>/../package.json"
 		},
+		"testPathIgnorePatterns": [
+			"<rootDir>/node_modules/",
+			"<rootDir>/dist/"
+		],
 		"maxWorkers": 1,
 		"detectOpenHandles": true
 	}
