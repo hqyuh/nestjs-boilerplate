@@ -1,7 +1,7 @@
+import { Permission } from '@/apis/permissions/entities/permission.entity';
 import { BaseEntity } from '@/common/base/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow } from 'class-validator';
-import { Permission } from '@/apis/permissions/entities/permission.entity';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
 @Entity({ name: 'role' })
