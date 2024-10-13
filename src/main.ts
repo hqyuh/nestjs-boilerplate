@@ -10,7 +10,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	app.setGlobalPrefix(GLOBAL_PATH);
-	console.log('h');
+
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<string>('PORT') || 3000;
 	const nodeEnv = configService.get<string>('NODE_ENV');
