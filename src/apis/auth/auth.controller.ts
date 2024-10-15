@@ -1,5 +1,6 @@
 import { ApiController } from '@/common/base/base.swagger';
 import { User } from '@/common/decorator/user.decorator';
+import { ValidationGuard } from '@/common/guards/validation.guard';
 import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserEntity } from '../user/entities/user.entity';
@@ -14,7 +15,7 @@ export class AuthController {
 	constructor(private readonly authService: IAuthService) {}
 
 	@Post('user/login')
-	@UseGuards(AuthGuard(AuthStrategy.USER_LOCAL))
+	@UseGuards(ValidationGuard, AuthGuard(AuthStrategy.USER_LOCAL))
 	@HttpCode(200)
 	async loginUser(@Body() _loginUserDto: LoginUserDto, @User() user: UserEntity) {
 		return this.authService.createToken(user);

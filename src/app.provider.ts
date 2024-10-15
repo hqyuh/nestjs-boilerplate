@@ -6,7 +6,6 @@ import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './common/exceptions/global.filter.error';
 import { TypeOrmFilter } from './common/filters/typeorm.filter';
 import { FormatResponseInterceptor } from './common/interceptors/format-response.interceptor';
-import { ValidationPipe } from './common/pipes/validation.pipe';
 
 export const providers: Provider[] = [
 	AppService,
@@ -19,12 +18,11 @@ export const providers: Provider[] = [
 	// Pipes
 	{
 		provide: APP_PIPE,
-		useClass: ValidationPipe
-	},
-	{
-		provide: APP_PIPE,
 		useFactory() {
-			return new I18nValidationPipe({ transform: true, whitelist: true });
+			return new I18nValidationPipe({
+				transform: true,
+				whitelist: true
+			});
 		}
 	},
 

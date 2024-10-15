@@ -9,8 +9,6 @@ import { UserController } from './user.controller';
 import { IUserService } from './user.interface';
 import { UserService } from './user.service';
 
-// import { AbilityModule } from '@/module/ability/ability.module';
-
 @Module({
 	imports: [TypeOrmModule.forFeature([UserEntity, Role]), CacheModule, AbilityModule],
 	controllers: [UserController],

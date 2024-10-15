@@ -36,10 +36,10 @@ export class UserController {
 	constructor(private readonly userService: IUserService) {}
 
 	@Post()
-	@ApiBearerAuth()
+	// @ApiBearerAuth()
 	@ApiCreate(UserEntity, 'User')
-	@UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
-	@CheckAbilities({ action: PermissionEnum.CREATE, subject: UserEntity })
+	// @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
+	// @CheckAbilities({ action: PermissionEnum.CREATE, subject: UserEntity })
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.createUser(createUserDto);
 	}

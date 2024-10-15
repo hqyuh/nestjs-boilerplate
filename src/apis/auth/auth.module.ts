@@ -22,10 +22,4 @@ import { UserLocalStrategy } from './strategies/local/user.local.strategy';
 		RefreshJwtStrategy
 	]
 })
-export class AuthModule {
-	// configure(consumer: MiddlewareConsumer) {
-	// 	consumer
-	// 		.apply(AuthValidationMiddleware)
-	// 		.forRoutes({ path: '/v1/auth/user/login', method: RequestMethod.POST });
-	// }
-}
+export class AuthModule {}

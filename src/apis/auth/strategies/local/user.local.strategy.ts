@@ -1,6 +1,6 @@
 import { AuthStrategy } from '@/apis/auth/auth.const';
 import { IUserService } from '@/apis/user/user.interface';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 
@@ -14,6 +14,10 @@ export class UserLocalStrategy extends PassportStrategy(Strategy, AuthStrategy.U
 	}
 
 	async validate(username: string, password: string) {
+		if (!username || !password) {
+			throw new BadRequestException('Username or password must be provided');
+		}
+
 		return this.userService.validateUserByUsernamePassword(username, password);
 	}
 }

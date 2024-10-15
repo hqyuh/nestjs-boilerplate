@@ -1,3 +1,4 @@
+import { Language } from '@/common/types/language.enum';
 import { Module } from '@nestjs/common';
 import { HeaderResolver, I18nModule } from 'nestjs-i18n';
 import { join } from 'path';
@@ -5,7 +6,7 @@ import { join } from 'path';
 @Module({
 	imports: [
 		I18nModule.forRoot({
-			fallbackLanguage: 'vi',
+			fallbackLanguage: Language.EN,
 			loaderOptions: {
 				path: join(__dirname, '/trans/'),
 				watch: true
