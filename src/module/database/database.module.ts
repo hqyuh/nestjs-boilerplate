@@ -31,7 +31,7 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 					subscribersDir: 'subscriber'
 				}
 			}),
-			async dataSourceFactory(options) {
+			dataSourceFactory: async (options) => {
 				if (!options) {
 					throw new Error('Invalid options passed');
 				}

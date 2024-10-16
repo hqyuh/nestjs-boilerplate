@@ -6,6 +6,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
 import { Repository } from 'typeorm';
+import { Transactional } from 'typeorm-transactional';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
 import { UserEntity } from './entities/user.entity';
@@ -39,6 +40,7 @@ export class UserService extends IUserService {
 		return this.getOneByIdOrFail(id);
 	}
 
+	@Transactional()
 	async createUser(createUserDto: CreateUserDto) {
 		// TODO: The password will be automatically generated or entered by the user
 		createUserDto.password = 'password';

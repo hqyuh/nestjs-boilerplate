@@ -152,5 +152,6 @@
 		],
 		"maxWorkers": 1,
 		"detectOpenHandles": true
-	}
+	},
+	"packageManager": "pnpm@9.12.1"
 }

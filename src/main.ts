@@ -1,18 +1,22 @@
 import { AppModule } from '@/app.module';
 import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
-import { MsgIds, logger } from '@/common/logger/logger';
+import { logger, MsgIds } from '@/common/logger/logger';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
-import { initializeTransactionalContext } from 'typeorm-transactional';
+import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
 
-async function bootstrap() {
-	initializeTransactionalContext();
-	const app = await NestFactory.create(AppModule);
+export async function bootstrap(): Promise<NestExpressApplication> {
+	initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
+
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+		abortOnError: true
+	});
 
 	app.setGlobalPrefix(GLOBAL_PATH);
 
@@ -45,6 +49,8 @@ async function bootstrap() {
 		};
 		logger.writeWithParameter(MsgIds.M002001, parameters);
 	});
+
+	return app;
 }
 
-bootstrap();
+void bootstrap();

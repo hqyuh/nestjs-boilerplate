@@ -1,5 +1,5 @@
 # Base stage
-FROM node:20-alpine as base
+FROM node:20-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
@@ -20,12 +20,12 @@ COPY --chown=node:node . .
 ENV NODE_ENV production
 
 # Development stage
-FROM base as dev
+FROM base AS dev
 EXPOSE 3000
 CMD ["pnpm", "start:dev"]
 
 # Production stage
-FROM base as prod
+FROM base AS prod
 # Build application and remove development dependencies in one RUN
 RUN pnpm build && pnpm prune --prod --config.ignore-scripts=true
 
