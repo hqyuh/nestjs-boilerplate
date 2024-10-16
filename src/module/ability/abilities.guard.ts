@@ -15,15 +15,20 @@ export class AbilitiesGuard implements CanActivate {
 		const rules = this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
 		const { user } = context.switchToHttp().getRequest();
 		const ability = await this.caslAbilityFactory.defineAbility(user);
+		console.log('🐔 =>  ability:', ability);
 		try {
+			console.log('run here');
 			rules.forEach((rule) => {
 				ForbiddenError.from(ability).throwUnlessCan(rule.action, rule.subject);
 			});
 			return true;
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
-				// error.message
-				throw new ForbiddenException('You do not have permission to perform this action.');
+				throw new ForbiddenException({
+					status: 403,
+					message: 'You do not have permission to perform this action.',
+					errors: error.message
+				});
 			}
 		}
 	}

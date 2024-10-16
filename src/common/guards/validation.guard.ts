@@ -20,8 +20,6 @@ export class ValidationGuard implements CanActivate {
 			}));
 
 			throw new BadRequestException({
-				status: 400,
-				message: 'Bad Request',
 				errors: formattedErrors
 			});
 		}
