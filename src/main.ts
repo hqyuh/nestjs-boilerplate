@@ -5,7 +5,6 @@ import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import * as csurf from 'csurf';
 import helmet from 'helmet';
 
 async function bootstrap() {
@@ -18,7 +17,6 @@ async function bootstrap() {
 	const nodeEnv = configService.get<string>('NODE_ENV');
 
 	app.use(helmet());
-	app.use(csurf());
 
 	app.enableCors({
 		origin: true,
