@@ -4,6 +4,8 @@ import { UserEntity } from '@/apis/user/entities/user.entity';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 @Module({
 	imports: [
@@ -28,7 +30,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 					migrationsDir: 'src/database/migrations',
 					subscribersDir: 'subscriber'
 				}
-			})
+			}),
+			async dataSourceFactory(options) {
+				if (!options) {
+					throw new Error('Invalid options passed');
+				}
+
+				return addTransactionalDataSource(new DataSource(options));
+			}
 		})
 	]
 })

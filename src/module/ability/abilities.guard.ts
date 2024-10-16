@@ -7,15 +7,14 @@ import { AbilityFactory } from './ability.factory';
 @Injectable()
 export class AbilitiesGuard implements CanActivate {
 	constructor(
-		private reflector: Reflector,
-		private caslAbilityFactory: AbilityFactory
+		private readonly reflector: Reflector,
+		private readonly caslAbilityFactory: AbilityFactory
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const rules = this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
 		const { user } = context.switchToHttp().getRequest();
 		const ability = await this.caslAbilityFactory.defineAbility(user);
-		console.log('🐔 =>  ability:', ability);
 		try {
 			console.log('run here');
 			rules.forEach((rule) => {

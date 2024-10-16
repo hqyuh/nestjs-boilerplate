@@ -5,9 +5,13 @@ import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import * as compression from 'compression';
 import helmet from 'helmet';
+import * as morgan from 'morgan';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 
 async function bootstrap() {
+	initializeTransactionalContext();
 	const app = await NestFactory.create(AppModule);
 
 	app.setGlobalPrefix(GLOBAL_PATH);
@@ -17,6 +21,8 @@ async function bootstrap() {
 	const nodeEnv = configService.get<string>('NODE_ENV');
 
 	app.use(helmet());
+	app.use(compression());
+	app.use(morgan('combined'));
 
 	app.enableCors({
 		origin: true,

@@ -17,16 +17,13 @@ export type AppAbility = PureAbility<[PermissionEnum, Subjects]>;
 @Injectable()
 export class AbilityFactory {
 	async defineAbility(user: User) {
-		console.log('🐔 =>  user11:', user);
 		const { can, cannot, build } = new AbilityBuilder<PureAbility<[PermissionEnum, Subjects]>>(
 			PureAbility as AbilityClass<PureAbility<[PermissionEnum, Subjects]>>
 		);
 
 		if (user.role.name === RoleEnum.ADMIN) {
-			console.log('Admin');
 			can(PermissionEnum.MANAGE, 'all');
 		} else {
-			console.log('User');
 			cannot(PermissionEnum.GET, UserEntity);
 			cannot(PermissionEnum.DELETE, UserEntity);
 		}

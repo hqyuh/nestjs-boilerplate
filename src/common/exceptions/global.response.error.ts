@@ -1,7 +1,7 @@
 export interface IResponseError {
 	statusCode: number;
 	message: string;
-	code: string;
+	// code: string;
 	timestamp: string;
 	path: string;
 	method: string;
@@ -10,18 +10,18 @@ export interface IResponseError {
 export const GlobalResponseError: (
 	statusCode: number,
 	message: string,
-	code: string,
+	// code: string,
 	request: Request
 ) => IResponseError = (
 	statusCode: number,
 	message: string,
-	code: string,
+	// code: string,
 	request: Request
 ): IResponseError => {
 	return {
 		statusCode: statusCode,
 		message,
-		code,
+		// code,
 		timestamp: new Date().toISOString(),
 		path: request.url,
 		method: request.method
