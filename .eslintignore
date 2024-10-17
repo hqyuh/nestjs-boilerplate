@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.lintstagedrc.json
+.commitlintrc.js
+src/module/i18n/generated/i18n.generated.ts
