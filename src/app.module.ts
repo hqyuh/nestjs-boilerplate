@@ -25,6 +25,6 @@ import { SeedModule } from './module/database/seeds/seed.module';
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(LoggerMiddleware).forRoutes('*');
+		consumer.apply(LoggerMiddleware).forRoutes('*path');
 	}
 }
