@@ -3,6 +3,7 @@ import { CacheModule } from '@/module/cache/cache.module';
 import { JwtModule } from '@/module/jwt/jwt.module';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+
 import { AuthController } from './auth.controller';
 import { IAuthService } from './auth.interface';
 import { AuthService } from './auth.service';

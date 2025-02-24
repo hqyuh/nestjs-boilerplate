@@ -7,10 +7,6 @@ services:
       dockerfile: Dockerfile
       target: dev
     command: ['sh', '-c', 'pnpm run db && pnpm run start:prod']
-    #Prod mode
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
     depends_on:
       database:
         condition: service_healthy

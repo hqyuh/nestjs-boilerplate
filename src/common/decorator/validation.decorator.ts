@@ -1,8 +1,8 @@
+import { translate } from '@/module/i18n/i18n.helper';
 import { applyDecorators } from '@nestjs/common';
 import * as validator from 'class-validator';
 
-import { translate } from '@/module/i18n/i18n.helper';
-import { logger, MsgIds } from '../logger/logger';
+import { MsgIds, logger } from '../logger/logger';
 
 export const IsString = (validationOptions?: validator.ValidationOptions) => {
   return applyDecorators(validator.IsString({ ...validationOptions, message: translate('validation.IS_STRING') }));

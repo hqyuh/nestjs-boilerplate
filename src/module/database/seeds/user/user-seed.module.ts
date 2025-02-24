@@ -1,6 +1,7 @@
 import { UserEntity } from '@/apis/user/entities/user.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { UserSeedService } from './user-seed.service';
 
 @Module({

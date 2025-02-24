@@ -2,6 +2,7 @@ import { ClassSerializerInterceptor, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
+
 import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './common/exceptions/global.filter.error';
 import { TypeOrmFilter } from './common/filters/typeorm.filter';
