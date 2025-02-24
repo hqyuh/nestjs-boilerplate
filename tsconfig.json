@@ -1,35 +1,35 @@
 {
-	// "ts-node": {
-	// 	"files": true
-	// },
-	// "files": ["src/main.ts", "src/common/types/base.d.ts", "src/apis/auth/auth.d.ts"],
-	"compilerOptions": {
-		"module": "commonjs",
-		"declaration": true,
-		"removeComments": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
-		"target": "ES2021",
-		"sourceMap": true,
-		"strict": true,
-		"outDir": "./dist",
-		"baseUrl": "./",
-		"incremental": true,
-		"skipLibCheck": true,
-		"strictNullChecks": false,
-		"noImplicitAny": false,
-		"strictBindCallApply": false,
-		"forceConsistentCasingInFileNames": false,
-		"noFallthroughCasesInSwitch": false,
-		"resolveJsonModule": true,
-		"paths": {
-			"@/*": ["src/*"],
-			"@module/*": ["src/module/*"],
-			"@common": ["src/common"],
-			"@apis/*": ["src/apis/*"],
-			"packageJson": ["package.json"]
-		}
-	},
-	"include": ["src/**/*.ts", "src/**/**/*.d.ts", "test/**/*", ".eslintrc.js", "typeorm.config.ts"]
+  // "ts-node": {
+  // 	"files": true
+  // },
+  // "files": ["src/main.ts", "src/common/types/base.d.ts", "src/apis/auth/auth.d.ts"],
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "strict": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@module/*": ["src/module/*"],
+      "@common": ["src/common"],
+      "@apis/*": ["src/apis/*"],
+      "packageJson": ["package.json"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/**/*.d.ts", "test/**/*", "eslint.config.mjs", "typeorm.config.ts"]
 }

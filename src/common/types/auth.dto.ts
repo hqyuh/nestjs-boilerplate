@@ -1,5 +1,5 @@
 export interface CreateTokenResponse {
-	user: any;
-	accessToken: string;
-	refreshToken: string;
+  user: any;
+  accessToken: string;
+  refreshToken: string;
 }

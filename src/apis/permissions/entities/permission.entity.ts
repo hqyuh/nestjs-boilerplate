@@ -6,16 +6,16 @@ import { Column, Entity, ManyToMany } from 'typeorm';
 
 @Entity({ name: 'permission' })
 export class Permission extends BaseEntity {
-	@Allow()
-	@ApiProperty({ example: 'This is name role' })
-	@Column()
-	name?: string;
+  @Allow()
+  @ApiProperty({ example: 'This is name role' })
+  @Column()
+  name?: string;
 
-	@Allow()
-	@ApiProperty({ example: 'This is permission role' })
-	@Column()
-	description?: string;
+  @Allow()
+  @ApiProperty({ example: 'This is permission role' })
+  @Column()
+  description?: string;
 
-	@ManyToMany(() => Role, (role) => role.permissions)
-	roles: Role[];
+  @ManyToMany(() => Role, (role) => role.permissions)
+  roles: Role[];
 }

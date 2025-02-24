@@ -12,24 +12,24 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 @Controller('auth')
 @ApiController('Auth')
 export class AuthController {
-	constructor(private readonly authService: IAuthService) {}
+  constructor(private readonly authService: IAuthService) {}
 
-	@Post('user/login')
-	@UseGuards(ValidationGuard, AuthGuard(AuthStrategy.USER_LOCAL))
-	@HttpCode(200)
-	async loginUser(@Body() _loginUserDto: LoginUserDto, @User() user: UserEntity) {
-		return this.authService.createToken(user);
-	}
+  @Post('user/login')
+  @UseGuards(ValidationGuard, AuthGuard(AuthStrategy.USER_LOCAL))
+  @HttpCode(200)
+  async loginUser(@Body() _loginUserDto: LoginUserDto, @User() user: UserEntity) {
+    return this.authService.createToken(user);
+  }
 
-	@UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
-	@Post('user/refresh-token')
-	async refreshToken(@User() refreshTokenDto: RefreshTokenDto) {
-		return this.authService.refreshToken(refreshTokenDto);
-	}
+  @UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
+  @Post('user/refresh-token')
+  async refreshToken(@User() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
+  }
 
-	@UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
-	@Get('user/logout')
-	async logout(@User() refreshTokenDto: RefreshTokenDto) {
-		return this.authService.logout(refreshTokenDto);
-	}
+  @UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
+  @Get('user/logout')
+  async logout(@User() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.logout(refreshTokenDto);
+  }
 }

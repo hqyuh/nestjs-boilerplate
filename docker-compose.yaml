@@ -1,74 +1,72 @@
 services:
-    server:
-        container_name: nestjs-boilerplate-server
-        #Dev mode
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: dev
-        command: ['sh', '-c', 'pnpm run db && pnpm run start:prod']
-        #Prod mode
-        # build:
-        #   context: .
-        #   dockerfile: Dockerfile
-        depends_on:
-            database:
-                condition: service_healthy
-        env_file:
-            - .env.production
-        ports:
-            - $PORT:3000
-        # networks:
-        #     - nestjs-boilerplate-network
+  server:
+    container_name: nestjs-boilerplate-server
+    #Dev mode
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: ['sh', '-c', 'pnpm run db && pnpm run start:prod']
+    #Prod mode
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    ports:
+      - $PORT:3000
 
-    database:
-        container_name: nestjs-boilerplate-database
-        image: postgres:16-alpine
-        restart: always
-        environment:
-            POSTGRES_USER: $DB_USERNAME
-            POSTGRES_PASSWORD: $DB_PASSWORD
-            POSTGRES_DB: $DB_NAME
-        ports:
-            - $DB_PORT:5432
-        env_file:
-            - .env.production
-        volumes:
-            - postgres_data:/data
-        healthcheck:
-            test: ['CMD-SHELL', 'pg_isready']
-            interval: 10s
-            timeout: 5s
-            retries: 5
+  database:
+    container_name: nestjs-boilerplate-database
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: $DB_USERNAME
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
+    ports:
+      - $DB_PORT:5432
+    env_file:
+      - .env.production
+    volumes:
+      - postgres_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-    pgadmin:
-        container_name: nestjs-boilerplate-pgadmin
-        image: dpage/pgadmin4:latest
-        environment:
-            PGADMIN_DEFAULT_EMAIL: hqh@example.com
-            PGADMIN_DEFAULT_PASSWORD: root
-        ports:
-            - 5050:80
-        restart: always
+  pgadmin:
+    container_name: nestjs-boilerplate-pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hqh@example.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - 5050:80
+    restart: always
 
-    redis:
-        container_name: nestjs-boilerplate-redis
-        image: redis:7-alpine
-        restart: always
-        command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PASSWORD
-        ports:
-            - $REDIS_PORT:6379
-        volumes:
-            - redis_data:/data
-        env_file:
-            - .env.production
+  redis:
+    container_name: nestjs-boilerplate-redis
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass $REDIS_PASSWORD
+    ports:
+      - $REDIS_PORT:6379
+    volumes:
+      - redis_data:/data
+    env_file:
+      - .env.production
 
 volumes:
-    postgres_data:
-        driver: local
-    redis_data:
-        driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
 
 networks:
-    default:
-        name: nestjs-boilerplate-network
+  default:
+    name: nestjs-boilerplate-network

@@ -6,18 +6,18 @@ import { Strategy } from 'passport-local';
 
 @Injectable()
 export class UserLocalStrategy extends PassportStrategy(Strategy, AuthStrategy.USER_LOCAL) {
-	constructor(private readonly userService: IUserService) {
-		super({
-			usernameField: 'username',
-			passwordField: 'password'
-		});
-	}
+  constructor(private readonly userService: IUserService) {
+    super({
+      usernameField: 'username',
+      passwordField: 'password',
+    });
+  }
 
-	async validate(username: string, password: string) {
-		if (!username || !password) {
-			throw new BadRequestException('Username or password must be provided');
-		}
+  async validate(username: string, password: string) {
+    if (!username || !password) {
+      throw new BadRequestException('Username or password must be provided');
+    }
 
-		return this.userService.validateUserByUsernamePassword(username, password);
-	}
+    return this.userService.validateUserByUsernamePassword(username, password);
+  }
 }

@@ -6,52 +6,49 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class RoleSeedService {
-	constructor(
-		@InjectRepository(Role)
-		private repository: Repository<Role>,
-		@InjectRepository(Permission)
-		private repositoryPermission: Repository<Permission>
-	) {}
+  constructor(
+    @InjectRepository(Role)
+    private repository: Repository<Role>,
+    @InjectRepository(Permission)
+    private repositoryPermission: Repository<Permission>
+  ) {}
 
-	async run() {
-		const permissions = await this.repositoryPermission.find();
-		const countUser = await this.repository.count({
-			where: {
-				id: 1
-			}
-		});
+  async run() {
+    const permissions = await this.repositoryPermission.find();
+    const countUser = await this.repository.count({
+      where: {
+        id: 1,
+      },
+    });
 
-		if (!countUser) {
-			await this.repository.save(
-				this.repository.create({
-					id: 2,
-					name: 'User',
-					description: 'Role User',
-					permissions: [
-						...permissions.filter(
-							(permission) =>
-								permission.name === 'create' || permission.name === 'get'
-						)
-					]
-				})
-			);
-		}
+    if (!countUser) {
+      await this.repository.save(
+        this.repository.create({
+          id: 2,
+          name: 'User',
+          description: 'Role User',
+          permissions: [
+            ...permissions.filter((permission) => permission.name === 'create' || permission.name === 'get'),
+          ],
+        })
+      );
+    }
 
-		const countAdmin = await this.repository.count({
-			where: {
-				id: 1
-			}
-		});
+    const countAdmin = await this.repository.count({
+      where: {
+        id: 1,
+      },
+    });
 
-		if (!countAdmin) {
-			await this.repository.save(
-				this.repository.create({
-					id: 1,
-					name: 'Admin',
-					description: 'Role Admin',
-					permissions: [...permissions]
-				})
-			);
-		}
-	}
+    if (!countAdmin) {
+      await this.repository.save(
+        this.repository.create({
+          id: 1,
+          name: 'Admin',
+          description: 'Role Admin',
+          permissions: [...permissions],
+        })
+      );
+    }
+  }
 }

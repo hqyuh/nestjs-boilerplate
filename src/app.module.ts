@@ -11,20 +11,12 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { SeedModule } from './module/database/seeds/seed.module';
 
 @Module({
-	imports: [
-		ConfigModule,
-		DatabaseModule,
-		ApiModule,
-		AbilityModule,
-		RateLimitModule,
-		I18NModule,
-		SeedModule
-	],
-	controllers: [AppController],
-	providers
+  imports: [ConfigModule, DatabaseModule, ApiModule, AbilityModule, RateLimitModule, I18NModule, SeedModule],
+  controllers: [AppController],
+  providers,
 })
 export class AppModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(LoggerMiddleware).forRoutes('*path');
-	}
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*path');
+  }
 }

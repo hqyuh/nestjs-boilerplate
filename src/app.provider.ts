@@ -8,51 +8,51 @@ import { TypeOrmFilter } from './common/filters/typeorm.filter';
 import { FormatResponseInterceptor } from './common/interceptors/format-response.interceptor';
 
 export const providers: Provider[] = [
-	AppService,
-	{ provide: APP_GUARD, useClass: ThrottlerGuard },
+  AppService,
+  { provide: APP_GUARD, useClass: ThrottlerGuard },
 
-	// Interceptors
-	{ provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
-	{ provide: APP_INTERCEPTOR, useClass: FormatResponseInterceptor },
+  // Interceptors
+  { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
+  { provide: APP_INTERCEPTOR, useClass: FormatResponseInterceptor },
 
-	// Pipes
-	{
-		provide: APP_PIPE,
-		useFactory() {
-			return new I18nValidationPipe({
-				transform: true,
-				whitelist: true
-			});
-		}
-	},
+  // Pipes
+  {
+    provide: APP_PIPE,
+    useFactory() {
+      return new I18nValidationPipe({
+        transform: true,
+        whitelist: true,
+      });
+    },
+  },
 
-	// Filters
-	{ provide: APP_FILTER, useClass: GlobalExceptionFilter },
-	{ provide: APP_FILTER, useClass: TypeOrmFilter },
-	{
-		provide: APP_FILTER,
-		useFactory() {
-			return new I18nValidationExceptionFilter({
-				errorFormatter(errors) {
-					return errors.map(({ property, constraints }) => {
-						const key = Object.keys(constraints || {})[0];
-						const error = constraints?.[key] || 'Invalid';
-						return {
-							property,
-							error
-						};
-					});
-				},
-				responseBodyFormatter(_host, exc, formattedErrors) {
-					const response = exc.getResponse();
-					const status = exc.getStatus();
-					return {
-						status,
-						message: response,
-						errors: formattedErrors
-					};
-				}
-			});
-		}
-	}
+  // Filters
+  { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+  { provide: APP_FILTER, useClass: TypeOrmFilter },
+  {
+    provide: APP_FILTER,
+    useFactory() {
+      return new I18nValidationExceptionFilter({
+        errorFormatter(errors) {
+          return errors.map(({ property, constraints }) => {
+            const key = Object.keys(constraints || {})[0];
+            const error = constraints?.[key] || 'Invalid';
+            return {
+              property,
+              error,
+            };
+          });
+        },
+        responseBodyFormatter(_host, exc, formattedErrors) {
+          const response = exc.getResponse();
+          const status = exc.getStatus();
+          return {
+            status,
+            message: response,
+            errors: formattedErrors,
+          };
+        },
+      });
+    },
+  },
 ];

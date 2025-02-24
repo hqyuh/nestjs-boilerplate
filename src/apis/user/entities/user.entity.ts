@@ -7,50 +7,50 @@ import { BeforeInsert, Column, Entity, Index, ManyToOne } from 'typeorm';
 
 @Entity({ name: 'user' })
 export class UserEntity extends BaseEntity {
-	/** Login account */
-	@Column()
-	username: string;
+  /** Login account */
+  @Column()
+  username: string;
 
-	/** Password */
-	@ApiHideProperty()
-	@Column()
-	@Exclude()
-	password: string;
+  /** Password */
+  @ApiHideProperty()
+  @Column()
+  @Exclude()
+  password: string;
 
-	/**
-	 * Hash the password before saving the user to the database
-	 */
-	@BeforeInsert()
-	async beforeInsert() {
-		this.password = await hash(this.password);
-	}
+  /**
+   * Hash the password before saving the user to the database
+   */
+  @BeforeInsert()
+  async beforeInsert() {
+    this.password = await hash(this.password);
+  }
 
-	/**
-	 * First name of the user
-	 */
-	@Index()
-	@Column({ type: String, nullable: true })
-	firstName: string | null;
+  /**
+   * First name of the user
+   */
+  @Index()
+  @Column({ type: String, nullable: true })
+  firstName: string | null;
 
-	/**
-	 * Last name of the user
-	 */
-	@Index()
-	@Column({ type: String, nullable: true })
-	lastName: string | null;
+  /**
+   * Last name of the user
+   */
+  @Index()
+  @Column({ type: String, nullable: true })
+  lastName: string | null;
 
-	/**
-	 * Activation status of the user
-	 */
-	@ApiProperty({ description: 'Activation Status' })
-	@Column({ default: true })
-	isActive: boolean;
+  /**
+   * Activation status of the user
+   */
+  @ApiProperty({ description: 'Activation Status' })
+  @Column({ default: true })
+  isActive: boolean;
 
-	/**
-	 * Role of the user
-	 */
-	@ManyToOne(() => Role, {
-		eager: true
-	})
-	role?: Role | null;
+  /**
+   * Role of the user
+   */
+  @ManyToOne(() => Role, {
+    eager: true,
+  })
+  role?: Role | null;
 }

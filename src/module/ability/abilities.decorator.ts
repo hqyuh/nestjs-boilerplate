@@ -6,9 +6,8 @@ import { Subjects } from './ability.factory';
 export const CHECK_ABILITY = 'check_ability';
 
 export interface RequiredRule {
-	action: PermissionEnum;
-	subject: Subjects;
+  action: PermissionEnum;
+  subject: Subjects;
 }
 
-export const CheckAbilities = (...requirements: RequiredRule[]) =>
-	SetMetadata(CHECK_ABILITY, requirements);
+export const CheckAbilities = (...requirements: RequiredRule[]) => SetMetadata(CHECK_ABILITY, requirements);

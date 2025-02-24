@@ -12,45 +12,45 @@ import * as morgan from 'morgan';
 import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
-	initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
+  initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
 
-	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-		abortOnError: true
-	});
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    abortOnError: true,
+  });
 
-	app.setGlobalPrefix(GLOBAL_PATH);
+  app.setGlobalPrefix(GLOBAL_PATH);
 
-	const configService = app.get<ConfigService>(ConfigService);
-	const port = configService.get<string>('PORT') || 3000;
-	const nodeEnv = configService.get<string>('NODE_ENV');
+  const configService = app.get<ConfigService>(ConfigService);
+  const port = configService.get<string>('PORT') || 3000;
+  const nodeEnv = configService.get<string>('NODE_ENV');
 
-	app.use(helmet());
-	app.use(compression());
-	app.use(morgan('combined'));
+  app.use(helmet());
+  app.use(compression());
+  app.use(morgan('combined'));
 
-	app.enableCors({
-		origin: true,
-		credentials: true
-	});
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
-	app.enableVersioning({
-		type: VersioningType.URI,
-		defaultVersion: '1'
-	});
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
 
-	setupSwagger(app);
+  setupSwagger(app);
 
-	await app.listen(port).then(async () => {
-		const url = await app.getUrl();
-		const parameters = {
-			port,
-			environment: nodeEnv,
-			documentation: `${url}/${DOCUMENT_PATH}`
-		};
-		logger.writeWithParameter(MsgIds.M002001, parameters);
-	});
+  await app.listen(port).then(async () => {
+    const url = await app.getUrl();
+    const parameters = {
+      port,
+      environment: nodeEnv,
+      documentation: `${url}/${DOCUMENT_PATH}`,
+    };
+    logger.writeWithParameter(MsgIds.M002001, parameters);
+  });
 
-	return app;
+  return app;
 }
 
 void bootstrap();
