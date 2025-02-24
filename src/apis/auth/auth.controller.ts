@@ -3,6 +3,7 @@ import { User } from '@/common/decorator/user.decorator';
 import { ValidationGuard } from '@/common/guards/validation.guard';
 import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+
 import { UserEntity } from '../user/entities/user.entity';
 import { AuthStrategy } from './auth.const';
 import { IAuthService } from './auth.interface';

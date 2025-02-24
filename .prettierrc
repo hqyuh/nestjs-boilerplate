@@ -17,9 +17,9 @@
   "trailingComma": "es5",
   "useTabs": false,
   "vueIndentScriptAndStyle": false,
-  "plugins": ["@trivago/prettier-plugin-sort-imports"],
-  "importOrder": ["^@apis/(.*)$", "^@common/(.*)$", "^@module/(.*)$", "^[./]"],
-  "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
-  "importOrderParserPlugins": ["classProperties", "decorators-legacy"]
+  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+  "importOrder": ["^@apis/(.*)$", "", "^@common/(.*)$", "", "^@module/(.*)$", "", "^[./]"],
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"],
+  "importOrderTypeScriptVersion": "5.0.0",
+  "importOrderCaseSensitive": false
 }

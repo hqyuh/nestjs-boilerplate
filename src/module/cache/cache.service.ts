@@ -1,6 +1,7 @@
 import { MetadataKey } from '@/common/constant/constants';
 import { Inject } from '@nestjs/common';
 import Redis from 'ioredis';
+
 import { ICacheService } from './cache.interface';
 
 export class CacheService extends ICacheService {

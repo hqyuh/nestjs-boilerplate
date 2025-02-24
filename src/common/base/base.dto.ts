@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional } from 'class-validator';
 import { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
+
 import { IsNumber } from '../decorator/validation.decorator';
 import { BaseEntity } from './base.entity';
 

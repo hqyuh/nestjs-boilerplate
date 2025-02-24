@@ -2,7 +2,7 @@ import { ConfigModule } from '@/module/configs/config.module';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ThrottlerModule, minutes } from '@nestjs/throttler';
+import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import Redis from 'ioredis';
 
 @Module({

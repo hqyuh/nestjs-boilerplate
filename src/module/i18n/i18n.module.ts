@@ -1,7 +1,7 @@
+import { join } from 'path';
 import { Language } from '@/common/types/language.enum';
 import { Module } from '@nestjs/common';
 import { HeaderResolver, I18nModule } from 'nestjs-i18n';
-import { join } from 'path';
 
 @Module({
   imports: [

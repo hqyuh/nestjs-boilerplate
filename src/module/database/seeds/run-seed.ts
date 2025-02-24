@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { StorageDriver, initializeTransactionalContext } from 'typeorm-transactional';
+import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
 
 import { PermissionSeedService } from './permission/permission-seed.service';
 import { RoleSeedService } from './role/role-seed.service';

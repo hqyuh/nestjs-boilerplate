@@ -35,7 +35,7 @@ FROM base AS prod
 COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod
 
-COPY --chown=node:node dist ./dist 
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
 # Build application and remove development dependencies in one RUN
 RUN pnpm build && pnpm prune --prod --config.ignore-scripts=true

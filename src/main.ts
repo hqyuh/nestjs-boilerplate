@@ -1,6 +1,6 @@
 import { AppModule } from '@/app.module';
 import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
-import { MsgIds, logger } from '@/common/logger/logger';
+import { logger, MsgIds } from '@/common/logger/logger';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +9,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
-import { StorageDriver, initializeTransactionalContext } from 'typeorm-transactional';
+import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });

@@ -1,9 +1,10 @@
 import { UserEntity } from '@/apis/user/entities/user.entity';
 import { ICacheService } from '@/module/cache/cache.interface';
+import { IJwtService } from '@/module/jwt/jwt.interface';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
 import { IAuthService } from './auth.interface';
-import { IJwtService } from '@/module/jwt/jwt.interface';
 import { RefreshTokenDto, TokenDto } from './dto/refresh-token.dto';
 
 @Injectable()

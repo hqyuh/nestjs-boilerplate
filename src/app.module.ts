@@ -8,6 +8,7 @@ import { DatabaseModule } from '@/module/database/database.module';
 import { I18NModule } from '@/module/i18n/i18n.module';
 import { RateLimitModule } from '@/module/ratelimit/ratelimit.module';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+
 import { SeedModule } from './module/database/seeds/seed.module';
 
 @Module({
