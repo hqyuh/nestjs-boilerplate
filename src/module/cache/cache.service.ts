@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 import { ICacheService } from './cache.interface';
 
 export class CacheService extends ICacheService {
-  constructor(@Inject(MetadataKey.REDIS) private redis: Redis) {
+  constructor(@Inject(MetadataKey.REDIS) private readonly redis: Redis) {
     super();
   }
 

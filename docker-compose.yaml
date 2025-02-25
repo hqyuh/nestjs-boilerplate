@@ -57,10 +57,27 @@ services:
     env_file:
       - .env.production
 
+  redis-insight:
+    container_name: redis-insight
+    image: redislabs/redisinsight:latest
+    ports:
+      - 5540:5540
+    volumes:
+      - redis_insight:/data
+    restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --fail http://localhost:5540 || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
 volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  redis_insight:
     driver: local
 
 networks:

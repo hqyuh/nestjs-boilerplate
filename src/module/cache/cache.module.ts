@@ -13,11 +13,11 @@ import { CacheService } from './cache.service';
       provide: MetadataKey.REDIS,
       useFactory(config: ConfigService) {
         return new Redis({
-          port: config.get<number>('REDIS_PORT'),
-          host: config.get<string>('REDIS_HOST'),
-          db: config.get<number>('REDIS_DB'),
-          password: config.get<string>('REDIS_PASSWORD'),
-          keyPrefix: config.get<string>('REDIS_PREFIX'),
+          port: config.getOrThrow<number>('REDIS_PORT'),
+          host: config.getOrThrow<string>('REDIS_HOST'),
+          db: config.getOrThrow<number>('REDIS_DB'),
+          password: config.getOrThrow<string>('REDIS_PASSWORD'),
+          keyPrefix: config.getOrThrow<string>('REDIS_PREFIX'),
         });
       },
       inject: [ConfigService],
