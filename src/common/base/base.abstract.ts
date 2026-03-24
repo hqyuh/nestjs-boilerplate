@@ -1,11 +1,11 @@
-import { BaseEntity } from '@/common/base/base.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { DeepPartial, DeleteResult, FindOptionsWhere, SelectQueryBuilder, UpdateResult } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 /**
  * @template T Type of the record data
  */
-export abstract class AbstractBaseService<T extends BaseEntity> {
+export abstract class AbstractBaseService<T extends BaseUuidEntity> {
   /**
    * Create a record
    * @param data Data to create the record
@@ -45,7 +45,7 @@ export abstract class AbstractBaseService<T extends BaseEntity> {
    * @returns Promise<T | null>
    * @example service.getOneById('uuid', { where: { name: 'John Doe' } })
    */
-  abstract getOneById(id: number, options?: Partial<FindOptions<T>>): Promise<T | null>;
+  abstract getOneById(id: string, options?: Partial<FindOptions<T>>): Promise<T | null>;
 
   /**
    * Get a record by ID or throw a NotFound error if not found
@@ -54,7 +54,7 @@ export abstract class AbstractBaseService<T extends BaseEntity> {
    * @returns Promise<T>
    * @example service.getOneByIdOrFail('uuid', { where: { name: 'John Doe' } })
    */
-  abstract getOneByIdOrFail(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
+  abstract getOneByIdOrFail(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
 
   /**
    * Get all records
@@ -89,7 +89,7 @@ export abstract class AbstractBaseService<T extends BaseEntity> {
    * @returns Promise<T>
    * @example service.updateById('uuid', { name: 'Jane Doe updated' }, { loadEagerRelations: false, errorMessage: 'Not found' })
    */
-  abstract updateById(id: number, data: QueryDeepPartialEntity<T>, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
+  abstract updateById(id: string, data: QueryDeepPartialEntity<T>, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
 
   /**
    * Remove a record, throw a NotFound error if not found
@@ -106,7 +106,7 @@ export abstract class AbstractBaseService<T extends BaseEntity> {
    * @returns Promise<T>
    * @example service.removeById('uuid', { loadEagerRelations: false, errorMessage: 'Not found' })
    */
-  abstract removeById(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
+  abstract removeById(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
 
   /**
    * Remove all records
@@ -130,7 +130,7 @@ export abstract class AbstractBaseService<T extends BaseEntity> {
    * @returns Promise<T>
    * @example service.softRemoveById('uuid', { loadEagerRelations: false, errorMessage: 'Not found' })
    */
-  abstract softRemoveById(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
+  abstract softRemoveById(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T>;
 
   /**
    * Soft remove all records

@@ -1,56 +1,53 @@
-import { Role } from '@/apis/roles/entities/role.entity';
-import { BaseEntity } from '@/common/base/base.entity';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { OAuthAccountEntity } from '@/apis/auth/entities/oauth-account.entity';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { hash } from 'argon2';
-import { Exclude } from 'class-transformer';
-import { BeforeInsert, Column, Entity, Index, ManyToOne } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity({ name: 'user' })
-export class UserEntity extends BaseEntity {
-  /** Login account */
-  @Column()
-  username: string;
+export class UserEntity extends BaseUuidEntity {
+  @Column({ unique: true })
+  email: string;
 
-  /** Password */
-  @ApiHideProperty()
-  @Column()
-  @Exclude()
-  password: string;
-
-  /**
-   * Hash the password before saving the user to the database
-   */
-  @BeforeInsert()
-  async beforeInsert() {
-    this.password = await hash(this.password);
-  }
-
-  /**
-   * First name of the user
-   */
   @Index()
-  @Column({ type: String, nullable: true })
+  @Column({ name: 'first_name', nullable: true })
   firstName: string | null;
 
-  /**
-   * Last name of the user
-   */
+  @Column({ name: 'middle_name', nullable: true })
+  middleName: string | null;
+
   @Index()
-  @Column({ type: String, nullable: true })
+  @Column({ name: 'last_name', nullable: true })
   lastName: string | null;
 
-  /**
-   * Activation status of the user
-   */
-  @ApiProperty({ description: 'Activation Status' })
-  @Column({ default: true })
-  isActive: boolean;
+  @Column({ name: 'password', type: 'text', nullable: true })
+  password: string | null;
+
+  @Column({ name: 'phone_number', nullable: true })
+  phoneNumber: string | null;
+
+  @Column({ name: 'avatar_url', nullable: true })
+  avatarUrl: string | null;
+
+  @Column({ name: 'email_verified_at', type: 'timestamp', nullable: true })
+  emailVerifiedAt: Date | null;
+
+  @Column({ name: 'role_id', type: 'uuid', nullable: true })
+  roleId: string | null;
+
+  @ManyToOne(() => RoleEntity, { nullable: true, eager: true })
+  @JoinColumn({ name: 'role_id' })
+  role?: RoleEntity | null;
+
+  @OneToMany(() => OAuthAccountEntity, (oauthAccount) => oauthAccount.user)
+  oauthAccounts: OAuthAccountEntity[];
 
   /**
-   * Role of the user
+   * Hash the password before saving/updating the user to the database
    */
-  @ManyToOne(() => Role, {
-    eager: true,
-  })
-  role?: Role | null;
+  @BeforeInsert()
+  @BeforeUpdate()
+  async beforePersist() {
+    this.password = await hash(this.password);
+  }
 }

@@ -1,4 +1,4 @@
-import { Permission } from '@/apis/permissions/entities/permission.entity';
+import { PermissionEntity } from '@/apis/permissions/entities/permission.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,32 +6,40 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class PermissionSeedService {
   constructor(
-    @InjectRepository(Permission)
-    private repository: Repository<Permission>
+    @InjectRepository(PermissionEntity)
+    private repository: Repository<PermissionEntity>
   ) {}
 
   async run() {
-    await this.repository.save([
-      this.repository.create({
-        id: 1,
-        name: 'GET',
-        description: 'Permission Get',
-      }),
-      this.repository.create({
-        id: 2,
-        name: 'CREATE',
-        description: 'Permission Create',
-      }),
-      this.repository.create({
-        id: 3,
-        name: 'UPDATE',
-        description: 'Permission Update',
-      }),
-      this.repository.create({
-        id: 4,
-        name: 'DELETE',
-        description: 'Permission Delete',
-      }),
-    ]);
+    const count = await this.repository.count();
+
+    if (count === 0) {
+      await this.repository.save([
+        this.repository.create({
+          name: 'GET',
+          description: 'Permission to view/read resources',
+        }),
+        this.repository.create({
+          name: 'CREATE',
+          description: 'Permission to create new resources',
+        }),
+        this.repository.create({
+          name: 'UPDATE',
+          description: 'Permission to update existing resources',
+        }),
+        this.repository.create({
+          name: 'DELETE',
+          description: 'Permission to delete resources',
+        }),
+        this.repository.create({
+          name: 'MANAGE_USERS',
+          description: 'Permission to manage users',
+        }),
+        this.repository.create({
+          name: 'MANAGE_ROLES',
+          description: 'Permission to manage roles and permissions',
+        }),
+      ]);
+    }
   }
 }

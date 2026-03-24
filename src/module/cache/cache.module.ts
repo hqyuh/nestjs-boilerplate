@@ -1,24 +1,32 @@
-import { MetadataKey } from '@/common/constant/constants';
+import { URL } from 'node:url';
+import KeyvRedis from '@keyv/redis';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
 
+import { ConfigModule } from '../configs/config.module';
+import { RedisConfig } from '../configs/interfaces/config.interface';
 import { ICacheService } from './cache.interface';
 import { CacheService } from './cache.service';
 
 @Global()
 @Module({
   providers: [
+    ConfigModule,
     {
-      provide: MetadataKey.REDIS,
+      provide: CACHE_MANAGER,
       useFactory(config: ConfigService) {
-        return new Redis({
-          port: config.getOrThrow<number>('REDIS_PORT'),
-          host: config.getOrThrow<string>('REDIS_HOST'),
-          db: config.getOrThrow<number>('REDIS_DB'),
-          password: config.getOrThrow<string>('REDIS_PASSWORD'),
-          keyPrefix: config.getOrThrow<string>('REDIS_PREFIX'),
+        const redisConfig = config.getOrThrow<RedisConfig>('app.redis');
+
+        // URL constructor will automatically encode username and password
+        const redisUrl = new URL(
+          `redis://${redisConfig.username}:${redisConfig.password}@${redisConfig.host}:${redisConfig.port}`
+        );
+
+        const redis = new KeyvRedis(redisUrl.toString(), {
+          keyPrefixSeparator: redisConfig.keyPrefix,
         });
+        return redis;
       },
       inject: [ConfigService],
     },

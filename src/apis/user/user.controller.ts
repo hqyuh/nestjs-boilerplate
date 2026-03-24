@@ -41,7 +41,7 @@ export class UserController {
   @ApiGetOne(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
-  getOne(@Param('id') id: number) {
+  getOne(@Param('id') id: string) {
     return this.userService.getOneUserById(id);
   }
 
@@ -50,7 +50,7 @@ export class UserController {
   @ApiUpdate(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.UPDATE, subject: UserEntity })
-  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserByIdDto) {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserByIdDto) {
     return this.userService.updateUserById(id, updateUserDto);
   }
 
@@ -59,7 +59,7 @@ export class UserController {
   @ApiDelete(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.DELETE, subject: UserEntity })
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.userService.removeUserById(id);
   }
 }

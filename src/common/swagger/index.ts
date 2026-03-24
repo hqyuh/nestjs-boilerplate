@@ -16,13 +16,17 @@ export const setupSwagger = (app: INestApplication) => {
     .setDescription(SWAGGER_API_DESCRIPTION)
     .setVersion(SWAGGER_API_CURRENT_VERSION)
     .addBearerAuth()
+    .addCookieAuth('token', {
+      name: 'refresh-token',
+      type: 'apiKey',
+    })
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup(SWAGGER_API_ROOT, app, document, {
     swaggerOptions: {
       persistAuthorization: true,
       tagsSorter: 'alpha',
-      operationsSorter: (a, b) => {
+      operationsSorter: (a: { get: (arg: string) => string }, b: { get: (arg: string) => string }): number => {
         const methodsOrder = ['get', 'post', 'put', 'patch', 'delete', 'options', 'trace'];
         let result = methodsOrder.indexOf(a.get('method')) - methodsOrder.indexOf(b.get('method'));
 

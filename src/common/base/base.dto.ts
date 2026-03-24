@@ -4,9 +4,9 @@ import { IsOptional } from 'class-validator';
 import { FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 
 import { IsNumber } from '../decorator/validation.decorator';
-import { BaseEntity } from './base.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
-export class PaginationDto<T = BaseEntity> {
+export class PaginationDto<T = BaseUuidEntity> {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }) => +(value || 10))

@@ -1,4 +1,4 @@
-import { Role } from '@/apis/roles/entities/role.entity';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { AbilityModule } from '@/module/ability/ability.module';
 import { CacheModule } from '@/module/cache/cache.module';
 import { Module } from '@nestjs/common';
@@ -10,7 +10,7 @@ import { IUserService } from './user.interface';
 import { UserService } from './user.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, Role]), CacheModule, AbilityModule],
+  imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity]), CacheModule, AbilityModule],
   controllers: [UserController],
   providers: [
     {

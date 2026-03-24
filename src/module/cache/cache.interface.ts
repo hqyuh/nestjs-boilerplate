@@ -1,20 +1,22 @@
+import { CacheableItem } from "cacheable";
+
 export abstract class ICacheService {
     /**
      * Saves data to the cache.
      * @param key 
      * @param value 
      * @param expired expiration time
-     * @return Promise<'OK'>
+     * @return Promise<T>
      */
-    abstract set(key: string, value: string, expired: string | number): Promise<'OK'>
+    abstract set<T>(key: string, value: T, expired?: number | string): Promise<boolean>
 
     /**
-     * Saves data to the cache. (but never expires)
-     * @param key
-     * @param value
-     * @return Promise<number>
+     * 
+     * Sets the values of the keys. If the secondary store is set then it will also set the values in the secondary store.
+     * @param {CacheableItem[]} items The items to set
+     * @returns {boolean} Whether the values were set
      */
-	abstract setNx(key: string, value: string): Promise<number>
+    abstract setMany(items: CacheableItem[]): Promise<boolean>;
 
     /**
      * Get data from the cache.
@@ -26,14 +28,15 @@ export abstract class ICacheService {
     /**
      * Delete data from the cache
      * @param key
-     * @return Promise<number>
+     * @return Promise<boolean>
      */
-	abstract del(key: string): Promise<number>
+	abstract delete(key: string): Promise<boolean>
+
 
     /**
-     * Get all keys by their prefix
-     * @param prefix 
-     * @return Promise<string[]>
+     * Deletes the keys from the primary store. If the secondary store is set then it will also delete the keys from the secondary store.
+     * @param {string[]} keys The keys to delete
+     * @returns {Promise<boolean>} Whether the keys were deleted
      */
-	abstract keys(prefix: string): Promise<string[]>
+    abstract deleteMany(keys: string[]): Promise<boolean>
 }

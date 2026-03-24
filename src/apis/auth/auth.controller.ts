@@ -1,36 +1,43 @@
 import { ApiController } from '@/common/base/base.swagger';
-import { User } from '@/common/decorator/user.decorator';
-import { ValidationGuard } from '@/common/guards/validation.guard';
-import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Response } from 'express';
 
-import { UserEntity } from '../user/entities/user.entity';
 import { AuthStrategy } from './auth.const';
 import { IAuthService } from './auth.interface';
-import { LoginUserDto } from './dto/login-user.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { CookieJwt } from './decorator/cookie-jwt.decorator';
+import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 
 @Controller('auth')
 @ApiController('Auth')
+@ApiBearerAuth()
 export class AuthController {
   constructor(private readonly authService: IAuthService) {}
 
-  @Post('user/login')
-  @UseGuards(ValidationGuard, AuthGuard(AuthStrategy.USER_LOCAL))
+  @Post('login')
   @HttpCode(200)
-  async loginUser(@Body() _loginUserDto: LoginUserDto, @User() user: UserEntity) {
-    return this.authService.createToken(user);
+  async loginUser(@Body() loginDto: LoginDTO, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(loginDto, response);
   }
 
-  @UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
-  @Post('user/refresh-token')
-  async refreshToken(@User() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  @Post('register')
+  @HttpCode(201)
+  async register(@Body() registerDto: RegisterDTO) {
+    return this.authService.register(registerDto);
   }
 
+  @Post('refresh-token')
+  @HttpCode(200)
   @UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
-  @Get('user/logout')
-  async logout(@User() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.logout(refreshTokenDto);
+  async refreshToken(@CookieJwt() authTokens: AuthTokens, @Res({ passthrough: true }) response: Response) {
+    return this.authService.refreshToken(authTokens, response);
+  }
+
+  @Get('logout')
+  @HttpCode(200)
+  @UseGuards(AuthGuard(AuthStrategy.USER_JWT))
+  async logout(@CookieJwt() authTokens: AuthTokens) {
+    return this.authService.logout(authTokens);
   }
 }

@@ -7,13 +7,11 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import * as compression from 'compression';
+import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
-import { initializeTransactionalContext, StorageDriver } from 'typeorm-transactional';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
-  initializeTransactionalContext({ storageDriver: StorageDriver.AUTO });
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     abortOnError: true,
   });
@@ -27,6 +25,7 @@ export async function bootstrap(): Promise<NestExpressApplication> {
   app.use(helmet());
   app.use(compression());
   app.use(morgan('combined'));
+  app.use(cookieParser());
 
   app.enableCors({
     origin: true,

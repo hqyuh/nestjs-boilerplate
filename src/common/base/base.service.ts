@@ -1,5 +1,4 @@
 import { AbstractBaseService } from '@/common/base/base.abstract';
-import { BaseEntity } from '@/common/base/base.entity';
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { extend } from 'lodash';
 import {
@@ -10,8 +9,9 @@ import {
 	UpdateResult
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
-export abstract class BaseService<T extends BaseEntity> extends AbstractBaseService<T> {
+export abstract class BaseService<T extends BaseUuidEntity> extends AbstractBaseService<T> {
     abstract notFoundMessage: string;
     constructor(private readonly repository: Repository<T>) {
 		super();
@@ -43,12 +43,12 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		return entity;
 	}
 
-	getOneById(id: number, options?: Partial<FindOptions<T>>): Promise<T | null> {
-		const where = { id } as FindOptionsWhere<T>;
+	getOneById(id: string, options?: Partial<FindOptions<T>>): Promise<T | null> {
+		const where = { id } as unknown as FindOptionsWhere<T>;
 		return this.getOne({ ...options, where });
 	}
 
-	async getOneByIdOrFail(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
+	async getOneByIdOrFail(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
 		const errorMessage = options?.errorMessage || this.notFoundMessage;
 		const entity = await this.getOneById(id, options);
 		if (!entity) throw new NotFoundException(errorMessage);
@@ -111,7 +111,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		return newEntity.save();
 	}
 
-	async updateById(id: number, data: QueryDeepPartialEntity<T>, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
+	async updateById(id: string, data: QueryDeepPartialEntity<T>, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
 		const entity = await this.getOneByIdOrFail(id, options);
 		const newEntity = extend<T>(entity, data);
 		return newEntity.save();
@@ -122,7 +122,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		return this.repository.remove(entity);
 	}
 
-	async removeById(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
+	async removeById(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
 		const entity = await this.getOneByIdOrFail(id, options);
 		return this.repository.remove(entity);
 	}
@@ -136,7 +136,7 @@ export abstract class BaseService<T extends BaseEntity> extends AbstractBaseServ
 		return this.repository.softRemove(entity);
 	}
 
-	async softRemoveById(id: number, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
+	async softRemoveById(id: string, options?: Partial<FindOrFailOptions<T>>): Promise<T> {
 		const entity = await this.getOneByIdOrFail(id, options);
 		return this.repository.softRemove(entity);
 	}

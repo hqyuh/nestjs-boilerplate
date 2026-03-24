@@ -1,42 +1,39 @@
-import { Permission } from '@/apis/permissions/entities/permission.entity';
-import { Role } from '@/apis/roles/entities/role.entity';
-import { UserEntity } from '@/apis/user/entities/user.entity';
+import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { addTransactionalDataSource } from 'typeorm-transactional';
+
+import { ConfigModule } from '../configs/config.module';
+import { DatabaseConfig } from '../configs/interfaces/config.interface';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.getOrThrow<string>('DB_HOST'),
-        port: configService.getOrThrow<number>('DB_PORT'),
-        username: configService.getOrThrow<string>('DB_USERNAME'),
-        password: configService.getOrThrow<string>('DB_PASSWORD'),
-        database: configService.getOrThrow<string>('DB_NAME'),
-        schema: configService.getOrThrow<string>('DB_SCHEMA'),
-        autoLoadEntities: true,
-        migrationsTableName: `migrations`,
-        entities: [__dirname + '/../**/*.entity{.ts,.js}', UserEntity, Role, Permission],
-        migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-        migrationsRun: true,
-        synchronize: false,
-        cli: {
-          entitiesDir: 'src',
-          migrationsDir: 'src/database/migrations',
-          subscribersDir: 'subscriber',
-        },
-      }),
-      dataSourceFactory: async (options) => {
-        if (!options) {
-          throw new Error('Invalid options passed');
-        }
+      useFactory: (configService: ConfigService) => {
+        const databaseConfig = configService.getOrThrow<DatabaseConfig>('app.database');
 
-        return addTransactionalDataSource(new DataSource(options));
+        return {
+          type: 'postgres',
+          host: databaseConfig.host,
+          port: databaseConfig.port,
+          username: databaseConfig.username,
+          password: databaseConfig.password,
+          database: databaseConfig.name,
+          schema: databaseConfig.schema,
+          autoLoadEntities: true,
+          migrationsTableName: `migrations`,
+          entities: [join(__dirname, '../../**/*.entity{.ts,.js}')],
+          migrations: [join(__dirname, 'migrations/**/*{.ts,.js}')],
+          migrationsRun: true,
+          synchronize: false,
+          cli: {
+            entitiesDir: 'src',
+            migrationsDir: 'src/database/migrations',
+            subscribersDir: 'subscriber',
+          },
+        };
       },
     }),
   ],

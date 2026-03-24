@@ -1,7 +1,9 @@
+import { Request } from 'express';
+
 export interface IResponseError {
   statusCode: number;
   message: string;
-  // code: string;
+  detail?: Record<string, any>;
   timestamp: string;
   path: string;
   method: string;
@@ -10,18 +12,18 @@ export interface IResponseError {
 export const GlobalResponseError: (
   statusCode: number,
   message: string,
-  // code: string,
+  detail: Record<string, any> | undefined,
   request: Request
 ) => IResponseError = (
   statusCode: number,
   message: string,
-  // code: string,
+  detail: Record<string, any>,
   request: Request
 ): IResponseError => {
   return {
     statusCode: statusCode,
     message,
-    // code,
+    detail,
     timestamp: new Date().toISOString(),
     path: request.url,
     method: request.method,

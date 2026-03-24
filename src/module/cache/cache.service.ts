@@ -1,29 +1,34 @@
-import { MetadataKey } from '@/common/constant/constants';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
-import Redis from 'ioredis';
+import { Cacheable, CacheableItem } from 'cacheable';
 
 import { ICacheService } from './cache.interface';
 
 export class CacheService extends ICacheService {
-  constructor(@Inject(MetadataKey.REDIS) private readonly redis: Redis) {
+  constructor(@Inject(CACHE_MANAGER) private readonly cache: Cacheable) {
     super();
   }
 
-  async set(key: string, value: string, expired: string | number): Promise<'OK'> {
-    await this.del(key);
-    return this.redis.set(key, value, 'EX', expired);
+  async set<T>(key: string, value: T, expired?: number | string): Promise<boolean> {
+    await this.delete(key);
+    return this.cache.set(key, value as T, expired);
   }
-  async setNx(key: string, value: string): Promise<number> {
-    await this.del(key);
-    return this.redis.setnx(key, value);
+
+  async setMany(items: CacheableItem[]): Promise<boolean> {
+    const keys = items.map((i) => i.key);
+    await this.deleteMany(keys);
+    return await this.cache.setMany(items);
   }
-  get(key: string): Promise<string | null> {
-    return this.redis.get(key);
+
+  async get<T>(key: string): Promise<T | undefined> {
+    return this.cache.get(key);
   }
-  del(key: string) {
-    return this.redis.del(key);
+
+  async delete(key: string): Promise<boolean> {
+    return await this.cache.delete(key);
   }
-  keys(prefix: string) {
-    return this.redis.keys(`${prefix}:*`);
+
+  async deleteMany(keys: string[]): Promise<boolean> {
+    return await this.cache.deleteMany(keys);
   }
 }

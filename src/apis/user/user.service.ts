@@ -1,6 +1,6 @@
-import { Role } from '@/apis/roles/entities/role.entity';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { PaginationDto } from '@/common/base/base.dto';
-import { BaseEntity } from '@/common/base/base.entity';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,25 +19,28 @@ export class UserService extends IUserService {
 
   constructor(
     @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
-    @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
+    @InjectRepository(RoleEntity) private readonly roleRepo: Repository<RoleEntity>,
     private readonly cacheService: ICacheService
   ) {
     super(userRepo);
   }
 
-  async validateUserByUsernamePassword(username: string, password: string): Promise<UserEntity> {
-    const user = await this.getOne({ where: { username } });
+  async validateUserByEmailPassword(email: string, password: string): Promise<UserEntity> {
+    const user = await this.getOne({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('Incorrect email or password');
+    }
+    if (!user.password) {
+      throw new UnauthorizedException('Incorrect email or password');
     }
     const comparePassword = await verify(user.password, password);
     if (!comparePassword) {
-      throw new UnauthorizedException('Incorrect username or password');
+      throw new UnauthorizedException('Incorrect email or password');
     }
     return user;
   }
 
-  async validateUserById(id: number): Promise<UserEntity> {
+  async validateUserById(id: string): Promise<UserEntity> {
     return this.getOneByIdOrFail(id);
   }
 
@@ -55,19 +58,19 @@ export class UserService extends IUserService {
     });
   }
 
-  async getAllUserPaginated(query: PaginationDto<BaseEntity>): Promise<IPaginationResponse<UserEntity>> {
+  async getAllUserPaginated(query: PaginationDto<BaseUuidEntity>): Promise<IPaginationResponse<UserEntity>> {
     return this.getAllPaginated(query);
   }
 
-  async getOneUserById(id: number) {
+  async getOneUserById(id: string) {
     return this.getOneByIdOrFail(id);
   }
 
-  async removeUserById(id: number) {
+  async removeUserById(id: string) {
     return this.softRemoveById(id);
   }
 
-  async updateUserById(id: number, updateUserDto: UpdateUserByIdDto) {
+  async updateUserById(id: string, updateUserDto: UpdateUserByIdDto) {
     return this.updateById(id, updateUserDto);
   }
 }

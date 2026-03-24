@@ -4,8 +4,13 @@ declare global {
   type UserType = 'user';
   type User = UserEntity;
   type UserJwtPayload = {
-    id: number;
+    id: string;
+    email: string;
+    fisrtName: string;
+    lastName: string;
+    role: string;
     exp?: number;
+    jti?: string;
   };
   type JwtPayload = UserJwtPayload;
 }

@@ -1,11 +1,11 @@
-import { Permission } from '@/apis/permissions/entities/permission.entity';
-import { BaseEntity } from '@/common/base/base.entity';
+import { PermissionEntity } from '@/apis/permissions/entities/permission.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow } from 'class-validator';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
 @Entity({ name: 'role' })
-export class Role extends BaseEntity {
+export class RoleEntity extends BaseUuidEntity {
   @Allow()
   @ApiProperty({ example: 'Admin' })
   @Column()
@@ -16,11 +16,13 @@ export class Role extends BaseEntity {
   @Column()
   description?: string;
 
-  @ManyToMany(() => Permission, (permission) => permission.roles)
+  @ManyToMany(() => PermissionEntity, (permission) => permission.roles)
   @JoinTable({
     name: 'role_permissions_permission',
-    joinColumns: [{ name: 'roleId', referencedColumnName: 'id' }],
-    inverseJoinColumns: [{ name: 'permissionId', referencedColumnName: 'id' }],
+    joinColumns: [{ name: 'role_id', referencedColumnName: 'id' }],
+    inverseJoinColumns: [{ name: 'permission_id', referencedColumnName: 'id' }],
   })
-  permissions: Permission[];
+  permissions: PermissionEntity[];
 }
+
+export const Role = RoleEntity;

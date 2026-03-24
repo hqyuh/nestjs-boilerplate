@@ -1,76 +1,230 @@
-import { UserEntity } from '@/apis/user/entities/user.entity';
+import { randomUUID } from 'node:crypto';
+import { SuccessResponse } from '@/common/base/success-response';
+import { AccessControlLists, Token } from '@/common/enums/auth.enum';
+import { Result } from '@/common/types/auth.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
+import { AppConfig, JWTConfig } from '@/module/configs/interfaces/config.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CacheableItem } from 'cacheable';
+import { Response } from 'express';
+import { I18nService } from 'nestjs-i18n';
 
+import { IUserService } from '../user/user.interface';
 import { IAuthService } from './auth.interface';
-import { RefreshTokenDto, TokenDto } from './dto/refresh-token.dto';
+import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
+
+type JtiTokens = AuthTokens & {
+  accessJti: string;
+  refreshJti: string;
+};
 
 @Injectable()
 export class AuthService extends IAuthService {
   constructor(
     private readonly jwtService: IJwtService,
     private readonly configService: ConfigService,
-    private readonly cacheService: ICacheService
+    private readonly cacheService: ICacheService,
+    private readonly userService: IUserService,
+    private readonly i18n: I18nService
   ) {
     super();
   }
 
-  async createToken(user: UserEntity) {
+  async login(loginUserDto: LoginDTO, response: Response): Promise<SuccessResponse<AuthTokens>> {
+    const {
+      jwt: { expirationTime, refreshTime },
+      cookie: { sameSite, maxAge },
+    } = this.configService.getOrThrow<AppConfig>('app');
+
+    const { email, password } = loginUserDto;
+
+    const user = await this.userService.validateUserByEmailPassword(email, password);
+
     const payload: JwtPayload = {
       id: user.id,
+      email: user.email,
+      fisrtName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.name,
     };
 
-    const { accessToken, refreshToken } = await this.generateToken(payload);
-    return { user, accessToken, refreshToken };
+    const { accessToken, refreshToken, accessJti, refreshJti } = await this.generateToken(payload);
+
+    // add access token and refresh token to White list
+    const setCache: CacheableItem[] = [
+      {
+        key: `${AccessControlLists.WHITE}:${Token.ACCESS}:${accessJti}`,
+        value: accessToken,
+        ttl: expirationTime * 1000,
+      },
+      {
+        key: `${AccessControlLists.WHITE}:${Token.REFRESH}:${refreshJti}`,
+        value: refreshToken,
+        ttl: refreshTime * 1000,
+      },
+    ];
+
+    this.cacheService.setMany(setCache);
+
+    response.cookie(Token.REFRESH, refreshToken, {
+      httpOnly: true,
+      sameSite,
+      maxAge,
+    });
+
+    return new SuccessResponse({
+      data: { accessToken, refreshToken },
+      message: await this.i18n.t('auth.login_success'),
+    });
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    const data = await this.jwtService.verify(refreshTokenDto.refreshToken);
+  async register(registerDto: RegisterDTO): Promise<SuccessResponse<Result>> {
+    // Check if user already exists
+    const user = await this.userService.getOne({ where: { email: registerDto.email } });
 
-    const isCheckBlackListedRefreshToken = await this.cacheService.get(refreshTokenDto.refreshToken);
+    // If user already exists, throw conflict exception
+    if (user) throw new ConflictException(this.i18n.t('conflict_user'));
 
-    if (isCheckBlackListedRefreshToken) {
-      // TODO: handle show error message
-      throw new UnauthorizedException('access_denied');
-    }
+    // Create new user
+    await this.userService.create({
+      email: registerDto.email,
+      password: registerDto.password,
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+    });
 
-    // renew token
-    const payload: JwtPayload = {
-      id: data.id,
-    };
-
-    return await this.generateToken(payload);
+    return new SuccessResponse({
+      data: {
+        success: true,
+      },
+      message: await this.i18n.t('auth.register_success'),
+    });
   }
 
-  private async generateToken(payload: JwtPayload): Promise<TokenDto> {
-    const expiresInAccessToken = this.configService.get<string>('JWT_EXPIRATION_TIME');
-    const expiresInRefreshToken = this.configService.get<string>('JWT_REFRESH_TOKEN_TIME');
+  private async generateToken(payload: JwtPayload): Promise<JtiTokens> {
+    const accessJti = randomUUID();
+    const refreshJti = randomUUID();
+    const { expirationTime, refreshTime } = this.configService.getOrThrow<JWTConfig>('app.jwt');
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.sign(payload, {
-        expiresIn: expiresInAccessToken,
+        expiresIn: expirationTime,
+        jwtid: accessJti,
       }),
       this.jwtService.sign(payload, {
-        expiresIn: expiresInRefreshToken,
+        expiresIn: refreshTime,
+        jwtid: refreshJti,
       }),
     ]);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, accessJti, refreshJti };
   }
 
-  async logout(refreshTokenDto: RefreshTokenDto) {
-    const data = await this.jwtService.verify(refreshTokenDto.refreshToken);
+  async refreshToken(authTokens: AuthTokens, response: Response): Promise<SuccessResponse<AuthTokens>> {
+    const {
+      jwt: { expirationTime, refreshTime },
+      cookie: { sameSite, maxAge },
+    } = this.configService.getOrThrow<AppConfig>('app');
 
-    const currentTime = Math.floor(Date.now() / 1000);
-    const refreshToken = refreshTokenDto.refreshToken;
+    // verify refresh token
+    const accessPayload = await this.jwtService.verify(authTokens.accessToken);
+    const refreshPayload = await this.jwtService.verify(authTokens.refreshToken);
 
-    const expiredTime = data.exp - currentTime;
+    const user = await this.userService.getOne({ where: { id: refreshPayload.id } });
 
-    await this.cacheService.set(refreshToken, refreshToken, expiredTime);
+    // get current refresh token
+    const cachedRefreshToken = await this.cacheService.get(
+      `${AccessControlLists.WHITE}:${Token.REFRESH}:${refreshPayload.jti}`
+    );
 
-    // TODO: handle show response logout
-    return {};
+    if (!cachedRefreshToken || cachedRefreshToken !== authTokens.refreshToken) {
+      throw new UnauthorizedException(this.i18n.t('access_denied'));
+    }
+
+    this.cacheService.deleteMany([
+      `${AccessControlLists.WHITE}:${Token.ACCESS}:${accessPayload.jti}`,
+      `${AccessControlLists.WHITE}:${Token.REFRESH}:${refreshPayload.jti}`,
+    ]);
+
+    // renew auth token
+    const payload: JwtPayload = {
+      id: user.id,
+      email: user.email,
+      fisrtName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.name,
+    };
+
+    const { accessToken, refreshToken, accessJti, refreshJti } = await this.generateToken(payload);
+
+    response.cookie(Token.REFRESH, refreshToken, {
+      httpOnly: true,
+      sameSite,
+      maxAge,
+    });
+
+    // add access token and refresh token to White list
+    const setCache: CacheableItem[] = [
+      {
+        key: `${AccessControlLists.WHITE}:${Token.ACCESS}:${accessJti}`,
+        value: accessToken,
+        ttl: expirationTime * 1000,
+      },
+      {
+        key: `${AccessControlLists.WHITE}:${Token.REFRESH}:${refreshJti}`,
+        value: refreshToken,
+        ttl: refreshTime * 1000,
+      },
+    ];
+
+    this.cacheService.setMany(setCache);
+
+    return new SuccessResponse({
+      data: { accessToken, refreshToken },
+      message: await this.i18n.t('auth.refresh_token_success'),
+    });
+  }
+
+  async logout(authTokens: AuthTokens): Promise<SuccessResponse<Result>> {
+    const { accessToken, refreshToken } = authTokens;
+
+    const accessPayload = await this.jwtService.verify(accessToken);
+    const refreshPayload = await this.jwtService.verify(refreshToken);
+
+    if (!accessPayload || !refreshPayload) {
+      throw new UnauthorizedException(this.i18n.t('access_denied'));
+    }
+
+    // keep blacklist entries for 7 days
+    const blacklistTtl = 7 * 24 * 60 * 60 * 1000;
+
+    // delete current access token and refresh token to White list
+    this.cacheService.deleteMany([
+      `${AccessControlLists.WHITE}:${Token.ACCESS}:${accessPayload.jti}`,
+      `${AccessControlLists.WHITE}:${Token.REFRESH}:${refreshPayload.jti}`,
+    ]);
+
+    // add data to black list
+    const setCacheBlacklist: CacheableItem[] = [
+      {
+        key: `${AccessControlLists.BLACK}:${Token.ACCESS}:${accessPayload.jti}`,
+        value: accessToken,
+        ttl: blacklistTtl,
+      },
+      {
+        key: `${AccessControlLists.BLACK}:${Token.REFRESH}:${refreshPayload.jti}`,
+        value: refreshToken,
+        ttl: blacklistTtl,
+      },
+    ];
+
+    this.cacheService.setMany(setCacheBlacklist);
+
+    return new SuccessResponse({
+      data: { success: true },
+      message: await this.i18n.t('auth.logout_success'),
+    });
   }
 }

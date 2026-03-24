@@ -1,23 +1,26 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { TypeORMError } from 'typeorm';
 
+import { IResponseError } from '../exceptions/global.response.error';
+
 @Catch(TypeORMError)
 export class TypeOrmFilter implements ExceptionFilter {
   private readonly logger = new Logger('TypeORMError');
 
   catch(exception: TypeORMError, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse();
-    let message: string = exception.message;
-    const code: string = (exception as any).code;
-    if (code === '23505') {
-      message = 'Dữ liệu bị trùng lặp';
-    }
+    const request = host.switchToHttp().getRequest();
+
     const customResponse = {
-      status: 500,
-      message: 'Internal Server Error',
-      errors: [{ code: code, message: message }],
-    };
+      statusCode: 500,
+      message: 'Internal Server Error (ORM)',
+      timestamp: new Date().toISOString(),
+      path: request.url,
+      method: request.method,
+    } satisfies IResponseError;
+
+    this.logger.error(exception.message);
     this.logger.error(JSON.stringify(exception));
-    response.status(customResponse.status).json(customResponse);
+    response.status(customResponse.statusCode).json(customResponse);
   }
 }

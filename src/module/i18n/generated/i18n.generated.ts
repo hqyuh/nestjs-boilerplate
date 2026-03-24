@@ -5,6 +5,14 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "auth": {
+        "login_success": string;
+        "register_success": string;
+        "refresh_token_success": string;
+        "logout_success": string;
+        "conflict_user": string;
+        "access_denied": string;
+    };
     "validation": {
         "IS_STRING": string;
         "IS_NOT_EMPTY": string;

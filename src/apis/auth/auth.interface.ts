@@ -1,10 +1,14 @@
-import { RefreshTokenDto, TokenDto } from './dto/refresh-token.dto';
-import { CreateTokenResponse } from '@/common/types/auth.dto';
+import { SuccessResponse } from '@/common/base/success-response';
+import { Result } from '@/common/types/auth.dto';
+import { Response } from 'express';
+import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 
 export abstract class IAuthService {
-    abstract createToken(user: User): Promise<CreateTokenResponse>;
+    abstract login(loginUserDto: LoginDTO, response: Response): Promise<SuccessResponse<AuthTokens>>;
 
-    abstract refreshToken(refreshTokenDto: RefreshTokenDto): Promise<TokenDto>;
+    abstract register(registerDto: RegisterDTO): Promise<SuccessResponse<Result>>;
 
-    abstract logout(refreshTokenDto: RefreshTokenDto): any;
+    abstract refreshToken(authTokens: AuthTokens, response: Response): Promise<SuccessResponse<AuthTokens>>;
+
+    abstract logout(authTokens: AuthTokens): Promise<SuccessResponse<Result>>;
 }

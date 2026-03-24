@@ -45,6 +45,34 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Database
+
+```bash
+# Run migrations
+$ pnpm run migration:run
+
+# Generate new migration (after entity changes)
+$ pnpm run migration:generate --name=MigrationName
+
+# Create empty migration
+$ pnpm run migration:create --name=MigrationName
+
+# Revert last migration
+$ pnpm run migration:revert
+
+# Show all migrations and their status
+$ pnpm run migration:show
+
+# Drop entire database schema
+$ pnpm run schema:drop
+
+# Seed database with initial data
+$ pnpm run seed:run
+
+# Run migrations and seed (full setup)
+$ pnpm run db
+```
+
 ## Test
 
 ```bash

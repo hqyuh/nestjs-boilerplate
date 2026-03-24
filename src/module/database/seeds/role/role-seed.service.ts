@@ -1,5 +1,5 @@
-import { Permission } from '@/apis/permissions/entities/permission.entity';
-import { Role } from '@/apis/roles/entities/role.entity';
+import { PermissionEntity } from '@/apis/permissions/entities/permission.entity';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,48 +7,44 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class RoleSeedService {
   constructor(
-    @InjectRepository(Role)
-    private repository: Repository<Role>,
-    @InjectRepository(Permission)
-    private repositoryPermission: Repository<Permission>
+    @InjectRepository(RoleEntity)
+    private repository: Repository<RoleEntity>,
+    @InjectRepository(PermissionEntity)
+    private repositoryPermission: Repository<PermissionEntity>
   ) {}
 
   async run() {
     const permissions = await this.repositoryPermission.find();
-    const countUser = await this.repository.count({
-      where: {
-        id: 1,
-      },
-    });
 
-    if (!countUser) {
-      await this.repository.save(
-        this.repository.create({
-          id: 2,
-          name: 'User',
-          description: 'Role User',
-          permissions: [
-            ...permissions.filter((permission) => permission.name === 'create' || permission.name === 'get'),
-          ],
-        })
-      );
-    }
+    const count = await this.repository.count();
 
-    const countAdmin = await this.repository.count({
-      where: {
-        id: 1,
-      },
-    });
+    if (count === 0) {
+      // Admin role - all permissions
+      const adminRole = await this.repository.save({
+        name: 'Admin',
+        description: 'Administrator role with full system access',
+        permissions: [...permissions],
+      });
 
-    if (!countAdmin) {
-      await this.repository.save(
-        this.repository.create({
-          id: 1,
-          name: 'Admin',
-          description: 'Role Admin',
-          permissions: [...permissions],
-        })
-      );
+      // User role - limited permissions
+      const userRole = await this.repository.save({
+        name: 'User',
+        description: 'Regular user role with basic permissions',
+        permissions: permissions.filter(
+          (permission) => permission.name === 'GET' || permission.name === 'CREATE' || permission.name === 'UPDATE'
+        ),
+      });
+
+      // Moderator role - can manage content
+      const moderatorRole = await this.repository.save({
+        name: 'Moderator',
+        description: 'Moderator role for content management',
+        permissions: permissions.filter(
+          (permission) => permission.name === 'GET' || permission.name === 'CREATE' || permission.name === 'UPDATE'
+        ),
+      });
+
+      return { adminRole, userRole, moderatorRole };
     }
   }
 }

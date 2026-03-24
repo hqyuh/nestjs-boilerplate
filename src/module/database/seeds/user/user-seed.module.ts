@@ -1,3 +1,4 @@
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { UserEntity } from '@/apis/user/entities/user.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -5,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserSeedService } from './user-seed.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity])],
   providers: [UserSeedService],
   exports: [UserSeedService],
 })

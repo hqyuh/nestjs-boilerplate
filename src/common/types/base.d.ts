@@ -1,8 +1,8 @@
-import { BaseEntity } from '@/common/base/base.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { FindOptionsOrder, FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
 declare global {
-  type FindOptions<T extends BaseEntity> = {
+  type FindOptions<T extends BaseUuidEntity> = {
     /** Conditions */
     where?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
     /** Sorting */
@@ -17,12 +17,12 @@ declare global {
     select?: FindOptionsSelect<T>;
   };
 
-  type FindOrFailOptions<T extends BaseEntity> = FindOptions<T> & {
+  type FindOrFailOptions<T extends BaseUuidEntity> = FindOptions<T> & {
     /** Error message when a record is not found */
     errorMessage?: string;
   };
 
-  type FindPaginatedOptions<T extends BaseEntity> = Partial<FindOptions<T>> & {
+  type FindPaginatedOptions<T extends BaseUuidEntity> = Partial<FindOptions<T>> & {
     /** Number of items per page */
     limit?: number;
     /** Current page number */
@@ -63,6 +63,9 @@ declare global {
       /** Total number of items */
       total: number;
     };
+    path: string;
+    method: string;
+    timestamp: string;
   };
 
   type GenerateTokenData = {

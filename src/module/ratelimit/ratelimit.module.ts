@@ -5,28 +5,32 @@ import { ConfigService } from '@nestjs/config';
 import { minutes, ThrottlerModule } from '@nestjs/throttler';
 import Redis from 'ioredis';
 
+import { RedisConfig } from '../configs/interfaces/config.interface';
+
 @Module({
   imports: [
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        throttlers: [
-          // TODO: move to env
-          // { name: 'short', limit: 3, ttl: seconds(1) },
-          // { name: 'medium', limit: 20, ttl: seconds(10) },
-          { name: 'long', limit: 100, ttl: minutes(1) },
-        ],
-        storage: new ThrottlerStorageRedisService(
-          new Redis({
-            port: config.getOrThrow<number>('REDIS_PORT'),
-            host: config.getOrThrow<string>('REDIS_HOST'),
-            db: config.getOrThrow<number>('REDIS_DB'),
-            password: config.getOrThrow<string>('REDIS_PASSWORD'),
-            keyPrefix: config.getOrThrow<string>('REDIS_PREFIX'),
-          })
-        ),
-      }),
+      useFactory: (config: ConfigService) => {
+        const redisConfig = config.getOrThrow<RedisConfig>('app.redis');
+        return {
+          throttlers: [
+            // { name: 'short', limit: 3, ttl: seconds(1) },
+            // { name: 'medium', limit: 20, ttl: seconds(10) },
+            { name: 'long', limit: 100, ttl: minutes(1) },
+          ],
+          storage: new ThrottlerStorageRedisService(
+            new Redis({
+              port: redisConfig.port,
+              host: redisConfig.host,
+              username: redisConfig.username,
+              password: redisConfig.password,
+              keyPrefix: redisConfig.keyPrefix,
+            })
+          ),
+        };
+      },
     }),
   ],
 })
