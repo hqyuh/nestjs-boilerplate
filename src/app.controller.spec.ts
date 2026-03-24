@@ -18,7 +18,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('peek-rate-server v0.0.1');
+      expect(appController.getHello()).toBe('nest-boilerplate-server v0.0.1');
     });
   });
 });

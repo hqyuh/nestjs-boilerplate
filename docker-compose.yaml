@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: peek-rate-server
+    container_name: nest-boilerplate-server
     #Dev mode
     # build:
     #   context: .
@@ -26,7 +26,7 @@ services:
       - ./logs:/app/logs # Persist logs on host
 
   database:
-    container_name: peek-rate-database
+    container_name: nest-boilerplate-database
     image: postgres:16-alpine
     restart: always
     environment:
@@ -46,7 +46,7 @@ services:
       retries: 5
 
   pgadmin:
-    container_name: peek-rate-pgadmin
+    container_name: nest-boilerplate-pgadmin
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: hqh@example.com
@@ -56,7 +56,7 @@ services:
     restart: always
 
   redis:
-    container_name: peek-rate-redis # host connect redis-insight
+    container_name: nest-boilerplate-redis # host connect redis-insight
     image: redis:8.2.3-alpine
     restart: always
     command: sh /redis-init.sh
@@ -98,4 +98,4 @@ volumes:
 
 networks:
   default:
-    name: peek-rate-network
+    name: nest-boilerplate-network

@@ -79,7 +79,7 @@ class EnvironmentVariables {
   REDIS_PASSWORD: string;
 
   @IsString()
-  REDIS_PREFIX: string = 'peek-rate:';
+  REDIS_PREFIX: string = 'nest-boilerplate:';
 }
 
 export function validate(config: Record<string, unknown>) {
