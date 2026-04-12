@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { SuccessResponse } from '@/common/base/success-response';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
+import { logger, MsgIds } from '@/common/logger/logger';
 import { Result } from '@/common/types/auth.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { AppConfig, JWTConfig } from '@/module/configs/interfaces/config.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheableItem } from 'cacheable';
 import { Response } from 'express';
@@ -22,6 +23,8 @@ type JtiTokens = AuthTokens & {
 
 @Injectable()
 export class AuthService extends IAuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: IJwtService,
     private readonly configService: ConfigService,
@@ -51,6 +54,8 @@ export class AuthService extends IAuthService {
     };
 
     const { accessToken, refreshToken, accessJti, refreshJti } = await this.generateToken(payload);
+    logger.write(MsgIds.M005001);
+    this.logger.log(logger.getMessage(MsgIds.M005001));
 
     // add access token and refresh token to White list
     const setCache: CacheableItem[] = [
@@ -73,6 +78,9 @@ export class AuthService extends IAuthService {
       sameSite,
       maxAge,
     });
+
+    logger.write(MsgIds.M005002);
+    this.logger.log(logger.getMessage(MsgIds.M005002));
 
     return new SuccessResponse({
       data: { accessToken, refreshToken },

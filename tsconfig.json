@@ -31,5 +31,12 @@
       "packageJson": ["package.json"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/**/*.d.ts", "test/**/*", "eslint.config.mjs", "typeorm.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/**/*.d.ts",
+    "test/**/*",
+    "eslint.config.mjs",
+    "typeorm.config.ts"
+  ]
 }

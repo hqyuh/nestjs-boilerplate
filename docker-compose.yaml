@@ -1,6 +1,12 @@
+name: nest-boilerplate
+
+networks:
+  default:
+    name: nest-blp-nw
+
 services:
   server:
-    container_name: nest-boilerplate-server
+    container_name: server
     #Dev mode
     # build:
     #   context: .
@@ -12,7 +18,7 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
       target: prod
-    command: ['pnpm', 'start:prod']
+    command: ['node', 'dist/src/main.js']
     depends_on:
       database:
         condition: service_healthy
@@ -26,9 +32,9 @@ services:
       - ./logs:/app/logs # Persist logs on host
 
   database:
-    container_name: nest-boilerplate-database
+    container_name: database
     image: postgres:16-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: $DB_USERNAME
       POSTGRES_PASSWORD: $DB_PASSWORD
@@ -38,7 +44,7 @@ services:
     env_file:
       - .env.production
     volumes:
-      - postgres_data:/data
+      - ./.docker/docker-data/postgres_data:/data/db
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready']
       interval: 10s
@@ -46,30 +52,31 @@ services:
       retries: 5
 
   pgadmin:
-    container_name: nest-boilerplate-pgadmin
+    container_name: pgadmin
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: hqh@example.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_EMAIL: $PGADMIN_DEFAULT_EMAIL
+      PGADMIN_DEFAULT_PASSWORD: $PGADMIN_DEFAULT_PASSWORD
     ports:
       - 5050:80
     restart: always
 
   redis:
-    container_name: nest-boilerplate-redis # host connect redis-insight
+    container_name: redis1 # host connect redis-insight
     image: redis:8.2.3-alpine
-    restart: always
+    restart: unless-stopped
     command: sh /redis-init.sh
     ports:
       - $REDIS_PORT:6379
     volumes:
       - redis_data:/data
-      - ./redis-init.sh:/redis-init.sh:ro
+      - ./docker/redis-init.sh:/redis-init.sh:ro
+      - ./.docker/docker-data/redis_data:/data
     env_file:
       - .env.production
     environment:
-      - REDIS_USERNAME=$REDIS_USERNAME
-      - REDIS_PASSWORD=$REDIS_PASSWORD
+      REDIS_USERNAME: $REDIS_USERNAME
+      REDIS_PASSWORD: $REDIS_PASSWORD
 
   # redis-insight:
   #   container_name: redis-insight
@@ -78,7 +85,7 @@ services:
   #     - 5540:5540
   #   volumes:
   #     - redis_insight:/data
-  #   restart: always
+  #   restart: unless-stopped
   #   depends_on:
   #     - redis
   #   healthcheck:
@@ -87,15 +94,3 @@ services:
   #     timeout: 10s
   #     retries: 3
   #     start_period: 10s
-
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-  redis_insight:
-    driver: local
-
-networks:
-  default:
-    name: nest-boilerplate-network

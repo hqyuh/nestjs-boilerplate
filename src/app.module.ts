@@ -7,17 +7,40 @@ import { DatabaseModule } from '@/module/database/database.module';
 import { I18NModule } from '@/module/i18n/i18n.module';
 import { RateLimitModule } from '@/module/ratelimit/ratelimit.module';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import type { Request } from 'express';
+import { ClsModule } from 'nestjs-cls';
 
 import { ConfigModule } from './module/configs/config.module';
 import { SeedModule } from './module/database/seeds/seed.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, ApiModule, AbilityModule, RateLimitModule, I18NModule, SeedModule],
+  imports: [
+    ConfigModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        generateId: true,
+        idGenerator: (req: Request) => {
+          const raw = req.headers['x-request-id'];
+          const fromHeader = (Array.isArray(raw) ? raw[0] : raw)?.toString().trim();
+          return fromHeader || randomUUID();
+        },
+      },
+    }),
+    DatabaseModule,
+    ApiModule,
+    AbilityModule,
+    RateLimitModule,
+    I18NModule,
+    SeedModule,
+  ],
   controllers: [AppController],
   providers,
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes({ path: '*path', method: RequestMethod.ALL });
+    consumer.apply(LoggerMiddleware).forRoutes({ path: '/api/v1/*path', method: RequestMethod.ALL });
   }
 }

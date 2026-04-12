@@ -1,10 +1,14 @@
-import { ConfigService } from '@nestjs/config';
+import { getRequestLogId } from '@/common/context/request-log.context';
+import { config as loadEnv } from 'dotenv';
 import * as winston from 'winston';
 import * as WinstonDaily from 'winston-daily-rotate-file';
 
+// Runs at import time (before Nest ConfigModule); ensures NODE_ENV from .env is visible here.
+loadEnv();
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const LogFileName = {
-  nestjsBoilerPlateServer: 'nestjs-boilerplate-server',
+  nestjsBoilerPlateServer: 'nest-blp-server',
 } as const;
 
 type LogFileNameType = (typeof LogFileName)[keyof typeof LogFileName];
@@ -36,9 +40,11 @@ export enum MsgIds {
   M002001 = 'M002-001',
   M002002 = 'M002-002',
   M002003 = 'M002-003',
-}
 
-const configService = new ConfigService();
+  // Login
+  M005001 = 'M005-001',
+  M005002 = 'M005-002',
+}
 
 const msgInfo = new Map<MsgIds, [MsgLevelType, string]>([
   // File
@@ -52,9 +58,13 @@ const msgInfo = new Map<MsgIds, [MsgLevelType, string]>([
   [MsgIds.M001008, [MsgLevel.ERROR, '{property} must be less than or equal {constraints.0}']],
 
   // Application
-  [MsgIds.M002001, [MsgLevel.DEBUG, 'The application is running.']],
+  [MsgIds.M002001, [MsgLevel.INFO, 'The application is running.']],
   [MsgIds.M002002, [MsgLevel.DEBUG, '']],
   [MsgIds.M002003, [MsgLevel.DEBUG, '']],
+
+  // Login
+  [MsgIds.M005001, [MsgLevel.INFO, 'Generated access token and refresh token successfully']],
+  [MsgIds.M005002, [MsgLevel.INFO, 'Logged in successfully']],
 ]);
 
 class WinstonLogger {
@@ -67,13 +77,14 @@ class WinstonLogger {
   private _logFormat: winston.Logform.Format;
 
   constructor(
-    name: LogFileNameType = 'nestjs-boilerplate-server',
+    name: LogFileNameType = 'nest-blp-server',
     dir = './logs',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _level = 'info',
+    level?: string,
     maxSize = '10m',
     maxFiles = '30d'
   ) {
+    const useConsole = process.env.NODE_ENV !== 'production';
+    const logLevel = level ?? (useConsole ? 'debug' : 'info');
     this._logFormat = winston.format.combine(
       winston.format.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss',
@@ -83,6 +94,13 @@ class WinstonLogger {
       winston.format.printf((info) => this.logFormat(info))
     );
 
+    const omitHttpAccessOnConsole = winston.format((info) => {
+      if ((info as { httpAccess?: boolean }).httpAccess) {
+        return false;
+      }
+      return info;
+    });
+
     this._prodTransports = [
       new WinstonDaily({
         dirname: dir,
@@ -91,6 +109,7 @@ class WinstonLogger {
         zippedArchive: true,
         maxSize,
         maxFiles,
+        format: this._logFormat,
       }),
       new WinstonDaily({
         dirname: dir,
@@ -100,15 +119,29 @@ class WinstonLogger {
         zippedArchive: true,
         maxSize,
         maxFiles,
+        format: this._logFormat,
       }),
     ];
 
-    this._localTransports = [new winston.transports.Console({})];
+    const consoleTransport = new winston.transports.Console({
+      level: logLevel,
+      format: winston.format.combine(omitHttpAccessOnConsole(), this._logFormat),
+    });
+
+    this._localTransports = [consoleTransport];
+
+    // Production used to be file-only; `docker logs` only streams stdout/stderr, not rotated files.
+    const logToStdout = process.env.LOG_TO_STDOUT !== 'false';
+
+    const transports: winston.transport[] = useConsole
+      ? [...this._localTransports, ...this._prodTransports]
+      : logToStdout
+        ? [...this._prodTransports, consoleTransport]
+        : [...this._prodTransports];
 
     this._loggerWinston = winston.createLogger({
-      format: this._logFormat,
-      transports:
-        configService.get<string>('NODE_ENV') !== 'development' ? this._prodTransports : this._localTransports,
+      level: logLevel,
+      transports,
     });
   }
 
@@ -119,6 +152,17 @@ class WinstonLogger {
    */
   private logFormat(info: winston.Logform.TransformableInfo): string {
     const { timestamp, label, level, msgId, message, parameters, error } = info;
+    const requestId = getRequestLogId();
+    if ((info as { httpAccess?: boolean }).httpAccess) {
+      return JSON.stringify({
+        timestamp,
+        label,
+        level,
+        kind: 'http_access',
+        ...(requestId !== undefined ? { requestId } : {}),
+        line: typeof message === 'string' ? message : String(message),
+      });
+    }
     const parserError = error
       ? Object.getOwnPropertyNames(error).reduce(
           (acc: Record<string, string>, key: string) => ({
@@ -132,6 +176,7 @@ class WinstonLogger {
       timestamp,
       label,
       level,
+      ...(requestId !== undefined ? { requestId } : {}),
       messageId: msgId,
       message,
       parameters,
@@ -205,6 +250,17 @@ class WinstonLogger {
    */
   public write(msgId: MsgIds): boolean {
     return this.logMessage(msgId);
+  }
+
+  /** Morgan / HTTP access line — goes to the same Winston transports as other app logs. */
+  public logHttpAccess(line: string): void {
+    const trimmed = line.replace(/\r?\n$/, '');
+    if (!trimmed) return;
+    this._loggerWinston.log({
+      level: 'info',
+      message: trimmed,
+      httpAccess: true,
+    });
   }
 }
 

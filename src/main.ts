@@ -1,5 +1,6 @@
 import { AppModule } from '@/app.module';
 import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
+import { ensureRequestIdMiddleware, morganRequestIdToken } from '@/common/middlewares/correlation-id.middleware';
 import { logger, MsgIds } from '@/common/logger/logger';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
@@ -16,6 +17,8 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     abortOnError: true,
   });
 
+  app.use(ensureRequestIdMiddleware);
+
   app.setGlobalPrefix(GLOBAL_PATH);
 
   const configService = app.get<ConfigService>(ConfigService);
@@ -24,7 +27,23 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   app.use(helmet());
   app.use(compression());
-  app.use(morgan('combined'));
+  morgan.token('request-id', morganRequestIdToken);
+  const accessFormat =
+    '[:request-id] :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :referrer :user-agent';
+  app.use(
+    morgan(accessFormat, {
+      stream: {
+        write(message: string): void {
+          process.stdout.write(message);
+          try {
+            logger.logHttpAccess(message);
+          } catch {
+            /* never block access line on stdout */
+          }
+        },
+      },
+    })
+  );
   app.use(cookieParser());
 
   app.enableCors({
@@ -39,7 +58,7 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   setupSwagger(app);
 
-  await app.listen(port).then(async () => {
+  await app.listen(port, '0.0.0.0').then(async () => {
     const url = await app.getUrl();
     const parameters = {
       port,

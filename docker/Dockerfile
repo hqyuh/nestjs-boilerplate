@@ -9,11 +9,8 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Install pnpm and NestJS CLI
-RUN npm install -g corepack && \
-    corepack enable && \
-    corepack prepare pnpm@10.4.0 --activate && \
-    npm i -g @nestjs/cli
+# Install pnpm via npm (avoids Corepack fetch failures in some Docker/Alpine setups)
+RUN npm install -g pnpm@10.4.0 @nestjs/cli
 
 # Copy package files
 COPY --chown=node:node package.json pnpm-lock.yaml ./
@@ -51,10 +48,7 @@ ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g corepack && \
-    corepack enable && \
-    corepack prepare pnpm@10.4.0 --activate
+RUN npm install -g pnpm@10.4.0
 
 # Copy package files and install production dependencies only
 COPY --chown=node:node package.json pnpm-lock.yaml ./
@@ -77,4 +71,4 @@ USER node
 EXPOSE 3000
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["pnpm", "start:prod"]
+CMD ["node", "dist/src/main.js"]

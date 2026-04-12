@@ -15,7 +15,9 @@ export const setupSwagger = (app: INestApplication) => {
     .setTitle(SWAGGER_API_NAME)
     .setDescription(SWAGGER_API_DESCRIPTION)
     .setVersion(SWAGGER_API_CURRENT_VERSION)
-    .addBearerAuth()
+    .setOpenAPIVersion('3.1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'refreshToken')
     .addCookieAuth('token', {
       name: 'refresh-token',
       type: 'apiKey',
