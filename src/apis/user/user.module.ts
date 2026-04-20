@@ -5,17 +5,23 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserEntity } from './entities/user.entity';
-import { UserController } from './user.controller';
-import { IUserService } from './user.interface';
-import { UserService } from './user.service';
+import { IUserService } from './interface/user.interface';
+import { UserController as UserControllerV1 } from './v1/user.controller';
+import { UserService as UserServiceV1 } from './v1/user.service';
+import { UserController as UserControllerV2 } from './v2/user.controller';
+import { UserService as UserServiceV2 } from './v2/user.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity]), CacheModule, AbilityModule],
-  controllers: [UserController],
+  controllers: [UserControllerV1, UserControllerV2],
   providers: [
     {
       provide: IUserService,
-      useClass: UserService,
+      useClass: UserServiceV1,
+    },
+    {
+      provide: IUserService,
+      useClass: UserServiceV2,
     },
   ],
   exports: [IUserService],

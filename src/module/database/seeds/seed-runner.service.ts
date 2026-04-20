@@ -15,11 +15,12 @@ export class SeedRunnerService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    // Only run seeds in development or when AUTO_SEED env is true
-    const shouldRunSeeds = process.env.AUTO_SEED === 'true' || process.env.NODE_ENV === 'development';
+    // Only run seeds when explicitly enabled.
+    // This prevents re-seeding on every hot-reload / watch restart (start:dev).
+    const shouldRunSeeds = process.env.AUTO_SEED === 'true';
 
     if (!shouldRunSeeds) {
-      this.logger.log('⏭️  Skipping auto-seed (AUTO_SEED not enabled)');
+      this.logger.log('⏭️  Skipping auto-seed (set AUTO_SEED=true to enable)');
       return;
     }
 

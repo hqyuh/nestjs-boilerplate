@@ -1,7 +1,7 @@
 import { AppModule } from '@/app.module';
-import { DOCUMENT_PATH, GLOBAL_PATH } from '@/common/constant/route.constant';
-import { ensureRequestIdMiddleware, morganRequestIdToken } from '@/common/middlewares/correlation-id.middleware';
+import { GLOBAL_PATH } from '@/common/constant/route.constant';
 import { logger, MsgIds } from '@/common/logger/logger';
+import { ensureRequestIdMiddleware, morganRequestIdToken } from '@/common/middlewares/correlation-id.middleware';
 import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +11,8 @@ import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
+
+import { SWAGGER_API_CURRENT_VERSION } from './common/swagger/swagger.const';
 
 export async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -53,7 +55,8 @@ export async function bootstrap(): Promise<NestExpressApplication> {
 
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
+    defaultVersion: SWAGGER_API_CURRENT_VERSION,
+    prefix: 'v',
   });
 
   setupSwagger(app);
@@ -63,7 +66,8 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     const parameters = {
       port,
       environment: nodeEnv,
-      documentation: `${url}/${DOCUMENT_PATH}`,
+      documentationV1: `${url}/${GLOBAL_PATH}/v1/docs`,
+      documentationV2: `${url}/${GLOBAL_PATH}/v2/docs`,
     };
     logger.writeWithParameter(MsgIds.M002001, parameters);
   });

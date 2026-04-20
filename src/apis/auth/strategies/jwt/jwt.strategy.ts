@@ -1,5 +1,5 @@
 import { AuthStrategy } from '@/apis/auth/auth.const';
-import { IUserService } from '@/apis/user/user.interface';
+import { IUserService } from '@/apis/user/interface/user.interface';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { Injectable, UnauthorizedException } from '@nestjs/common';

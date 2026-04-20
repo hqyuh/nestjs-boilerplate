@@ -6,14 +6,14 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-import { AuthStrategy } from '../auth/auth.const';
-import { PermissionEnum } from '../permissions/permission.enum';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserByIdDto } from './dto/update-user-by-id.dto';
-import { UserEntity } from './entities/user.entity';
-import { IUserService } from './user.interface';
+import { AuthStrategy } from '../../auth/auth.const';
+import { PermissionEnum } from '../../permissions/permission.enum';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserByIdDto } from '../dto/update-user-by-id.dto';
+import { UserEntity } from '../entities/user.entity';
+import { IUserService } from '../interface/user.interface';
 
-@Controller('user')
+@Controller({ path: 'user', version: '1' })
 @ApiController('User')
 export class UserController {
   constructor(private readonly userService: IUserService) {}

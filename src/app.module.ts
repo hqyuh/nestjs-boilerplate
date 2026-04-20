@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { ApiModule } from '@/apis/api.module';
 import { AppController } from '@/app.controller';
 import { providers } from '@/app.provider';
@@ -7,7 +8,6 @@ import { DatabaseModule } from '@/module/database/database.module';
 import { I18NModule } from '@/module/i18n/i18n.module';
 import { RateLimitModule } from '@/module/ratelimit/ratelimit.module';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import type { Request } from 'express';
 import { ClsModule } from 'nestjs-cls';
 
@@ -41,6 +41,6 @@ import { SeedModule } from './module/database/seeds/seed.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes({ path: '/api/v1/*path', method: RequestMethod.ALL });
+    consumer.apply(LoggerMiddleware).forRoutes({ path: '/api/*path', method: RequestMethod.ALL });
   }
 }

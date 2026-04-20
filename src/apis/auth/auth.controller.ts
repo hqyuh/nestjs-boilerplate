@@ -9,7 +9,7 @@ import { IAuthService } from './auth.interface';
 import { CookieJwt } from './decorator/cookie-jwt.decorator';
 import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 
-@Controller('auth')
+@Controller({ path: 'auth', version: ['1', '2'] })
 @ApiController('Auth')
 @ApiBearerAuth()
 export class AuthController {

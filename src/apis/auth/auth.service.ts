@@ -12,7 +12,7 @@ import { CacheableItem } from 'cacheable';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
 
-import { IUserService } from '../user/user.interface';
+import { IUserService } from '../user/interface/user.interface';
 import { IAuthService } from './auth.interface';
 import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 
