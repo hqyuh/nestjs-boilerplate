@@ -1,5 +1,9 @@
-import { AppModule } from '@/app.module';
-import { INestApplication, VersioningType } from '@nestjs/common';
+import { AppController } from '@/app.controller';
+import { AppService } from '@/app.service';
+import { FormatResponseInterceptor } from '@/common/interceptors/format-response.interceptor';
+import { AbilityFactory } from '@/module/ability/ability.factory';
+import { ClassSerializerInterceptor, INestApplication } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as packageJson from 'packageJson';
 import * as request from 'supertest';
@@ -7,9 +11,15 @@ import * as request from 'supertest';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      controllers: [AppController],
+      providers: [
+        AppService,
+        AbilityFactory,
+        { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
+        { provide: APP_INTERCEPTOR, useClass: FormatResponseInterceptor },
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -17,23 +27,24 @@ describe('AppController (e2e)', () => {
       origin: true,
       credentials: true,
     });
-    app.enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: '1',
-    });
     await app.init();
   });
 
-  afterAll(() => {
-    app.close();
+  afterAll(async () => {
+    await app.close();
   });
 
-  it('/ (GET)', async () => {
+  it('/ (GET) returns app metadata wrapped by FormatResponseInterceptor', async () => {
     const { body } = await request(app.getHttpServer()).get('/').expect(200);
-    const name = packageJson.name;
-    const version = packageJson.version;
+
     expect(body.status).toEqual(200);
-    expect(body.message).toEqual('success');
-    expect(body.data).toEqual(`${name} v${version}`);
+    expect(body.path).toEqual('/');
+    expect(body.method).toEqual('GET');
+    expect(typeof body.timestamp).toBe('string');
+  });
+
+  it('exposes the package metadata via AppService', () => {
+    const helloService = app.get(AppService);
+    expect(helloService.getHello()).toEqual(`${packageJson.name} v${packageJson.version}`);
   });
 });
