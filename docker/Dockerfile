@@ -57,6 +57,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 # Copy built application from build stage
 COPY --chown=node:node --from=build /app/dist ./dist
+COPY --chown=node:node --from=build /app/src/module/i18n/trans ./dist/src/module/i18n/trans
 
 # Copy entrypoint script
 COPY --chown=node:node docker/entrypoint.sh /usr/local/bin/entrypoint.sh
