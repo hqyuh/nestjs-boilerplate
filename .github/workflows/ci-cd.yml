@@ -3,8 +3,8 @@ name: CI/CD
 on:
   pull_request:
   push:
-    branches: [master]
-    tags: ['v*']
+    branches:
+      - '**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -33,7 +33,7 @@ jobs:
 
   docker:
     needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     environment: nest-bl
     runs-on: ubuntu-latest
     timeout-minutes: 20
