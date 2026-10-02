@@ -123,7 +123,8 @@
     "ts-loader": "^9.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "webpack": "5.111.1"
   },
   "engines": {
     "node": ">=26.10.0"
@@ -162,5 +163,10 @@
     "maxWorkers": 1,
     "detectOpenHandles": true
   },
-  "packageManager": "pnpm@10.4.0"
+  "packageManager": "pnpm@10.4.0",
+  "pnpm": {
+    "overrides": {
+      "webpack": "5.111.1"
+    }
+  }
 }
