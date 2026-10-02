@@ -5,10 +5,10 @@ import {
 	DeepPartial,
 	DeleteResult,
 	FindOptionsWhere,
+	QueryDeepPartialEntity,
 	Repository,
 	UpdateResult
 } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { BaseUuidEntity } from './base-uuid.entity';
 
 export abstract class BaseService<T extends BaseUuidEntity> extends AbstractBaseService<T> {

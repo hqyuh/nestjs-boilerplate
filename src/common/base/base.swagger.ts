@@ -9,8 +9,9 @@ import {
   ApiOperation,
   ApiTags,
   getSchemaPath,
+  ReferenceObject,
+  SchemaObject,
 } from '@nestjs/swagger';
-import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 export const getBaseProperties = (status: number): Record<string, SchemaObject | ReferenceObject> => {
   return {

@@ -1,12 +1,11 @@
 import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { PaginationDto } from '@/common/base/base.dto';
-import { ICacheService } from '@/module/cache/cache.interface';
+import { BaseService } from '@/common/base/base.service';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
 import { Repository } from 'typeorm';
-import { Transactional } from 'typeorm-transactional';
 
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserByIdDto } from '../dto/update-user-by-id.dto';
@@ -14,13 +13,12 @@ import { UserEntity } from '../entities/user.entity';
 import { IUserService } from '../interface/user.interface';
 
 @Injectable()
-export class UserService extends IUserService {
+export class UserService extends BaseService<UserEntity> implements IUserService {
   notFoundMessage = 'User not found';
 
   constructor(
     @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(RoleEntity) private readonly roleRepo: Repository<RoleEntity>,
-    private readonly cacheService: ICacheService
   ) {
     super(userRepo);
   }
@@ -44,7 +42,6 @@ export class UserService extends IUserService {
     return this.getOneByIdOrFail(id);
   }
 
-  @Transactional()
   async createUser(createUserDto: CreateUserDto) {
     // TODO: The password will be automatically generated or entered by the user
     createUserDto.password = 'password';
@@ -53,7 +50,11 @@ export class UserService extends IUserService {
     if (!role) throw new NotFoundException('Role not found');
 
     return this.create({
-      ...createUserDto,
+      email: createUserDto.username,
+      password: createUserDto.password,
+      firstName: createUserDto.firstName,
+      lastName: createUserDto.lastName,
+      roleId: createUserDto.roleId,
       role,
     });
   }

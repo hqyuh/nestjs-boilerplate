@@ -2,7 +2,7 @@ import { AuthStrategy } from '@/apis/auth/auth.const';
 import { IUserService } from '@/apis/user/interface/user.interface';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
 import { ICacheService } from '@/module/cache/cache.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -10,7 +10,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, AuthStrategy.USER_JWT) {
   constructor(
-    private readonly userService: IUserService,
+    @Inject(IUserService) private readonly userService: IUserService,
     private readonly cacheService: ICacheService
   ) {
     super({

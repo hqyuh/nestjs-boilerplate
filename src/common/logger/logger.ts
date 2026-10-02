@@ -1,7 +1,7 @@
 import { getRequestLogId } from '@/common/context/request-log.context';
 import { config as loadEnv } from 'dotenv';
 import * as winston from 'winston';
-import * as WinstonDaily from 'winston-daily-rotate-file';
+import WinstonDaily from 'winston-daily-rotate-file';
 
 // Runs at import time (before Nest ConfigModule); ensures NODE_ENV from .env is visible here.
 loadEnv();

@@ -1,5 +1,5 @@
 import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
-import { FindOptionsOrder, FindOptionsSelect, FindOptionsWhere } from 'typeorm';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
 declare global {
   type FindOptions<T extends BaseUuidEntity> = {
@@ -8,7 +8,7 @@ declare global {
     /** Sorting */
     order?: FindOptionsOrder<T>;
     /** Join tables */
-    relations?: string[];
+    relations?: FindOptionsRelations<T>;
     /** Enable/disable eager loading */
     loadEagerRelations?: boolean;
     /** Include soft-deleted records */

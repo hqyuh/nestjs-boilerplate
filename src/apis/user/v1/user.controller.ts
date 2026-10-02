@@ -2,7 +2,7 @@ import { PaginationDto } from '@/common/base/base.dto';
 import { ApiController, ApiCreate, ApiDelete, ApiGetAll, ApiGetOne, ApiUpdate } from '@/common/base/base.swagger';
 import { CheckAbilities } from '@/module/ability/abilities.decorator';
 import { AbilitiesGuard } from '@/module/ability/abilities.guard';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -16,7 +16,7 @@ import { IUserService } from '../interface/user.interface';
 @Controller({ path: 'user', version: '1' })
 @ApiController('User')
 export class UserController {
-  constructor(private readonly userService: IUserService) {}
+  constructor(@Inject(IUserService) private readonly userService: IUserService) {}
 
   @Post()
   @ApiBearerAuth()
@@ -31,7 +31,7 @@ export class UserController {
   @ApiBearerAuth()
   @ApiGetAll(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
-  @CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
+  @CheckAbilities({ action: PermissionEnum.GET, subject: 'all' })
   getAll(@Query() query: PaginationDto) {
     return this.userService.getAllUserPaginated(query);
   }

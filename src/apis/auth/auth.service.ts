@@ -6,7 +6,7 @@ import { Result } from '@/common/types/auth.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { AppConfig, JWTConfig } from '@/module/configs/interfaces/config.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheableItem } from 'cacheable';
 import { Response } from 'express';
@@ -29,7 +29,7 @@ export class AuthService extends IAuthService {
     private readonly jwtService: IJwtService,
     private readonly configService: ConfigService,
     private readonly cacheService: ICacheService,
-    private readonly userService: IUserService,
+    @Inject(IUserService) private readonly userService: IUserService,
     private readonly i18n: I18nService
   ) {
     super();

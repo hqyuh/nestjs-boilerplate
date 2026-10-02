@@ -3,6 +3,9 @@
   "rootDir": "..",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "maxWorkers": 1,
+  "forceExit": true,
+  "modulePathIgnorePatterns": ["<rootDir>/dist/"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },

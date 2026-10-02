@@ -1,7 +1,7 @@
 # ================================
 # Base stage - Common dependencies
 # ================================
-FROM node:20-alpine AS base
+FROM node:26-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -40,7 +40,7 @@ RUN pnpm build
 # ================================
 # Production stage - Optimized
 # ================================
-FROM node:20-alpine AS prod
+FROM node:26-alpine AS prod
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"

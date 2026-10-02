@@ -30,7 +30,7 @@ export class AppController {
   @Get('rbac-user')
   @ApiBearerAuth()
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
-  @CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
+  @CheckAbilities({ action: PermissionEnum.GET, subject: 'all' })
   getRBACUser(): string {
     // This is stuff for rbac get user entities (User has permission to get User)
     return 'The current user has permission to get UserEntity';

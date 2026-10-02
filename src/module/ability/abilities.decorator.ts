@@ -1,5 +1,5 @@
 import { PermissionEnum } from '@/apis/permissions/permission.enum';
-import { SetMetadata } from '@nestjs/common/decorators';
+import { SetMetadata } from '@nestjs/common';
 
 import { Subjects } from './ability.factory';
 

@@ -11,10 +11,6 @@ import configuration, { validate } from './configuration';
       envFilePath: getEnv(),
       load: [configuration],
       validate,
-      validationOptions: {
-        allowUnknown: true,
-        abortEarly: true,
-      },
     }),
   ],
   exports: [NestConfigModule],

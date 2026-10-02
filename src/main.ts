@@ -7,10 +7,10 @@ import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import * as morgan from 'morgan';
+import morgan from 'morgan';
 
 import { SWAGGER_API_CURRENT_VERSION } from './common/swagger/swagger.const';
 

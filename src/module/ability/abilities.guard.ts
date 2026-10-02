@@ -2,8 +2,10 @@ import { ForbiddenError } from '@casl/ability';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
+import { UserEntity } from '@/apis/user/entities/user.entity';
+
 import { CHECK_ABILITY, RequiredRule } from './abilities.decorator';
-import { AbilityFactory } from './ability.factory';
+import { AbilityFactory, Subjects } from './ability.factory';
 
 @Injectable()
 export class AbilitiesGuard implements CanActivate {
@@ -14,11 +16,11 @@ export class AbilitiesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const rules = this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) || [];
-    const { user } = context.switchToHttp().getRequest();
-    const ability = await this.caslAbilityFactory.defineAbility(user);
+    const request = context.switchToHttp().getRequest();
+    const ability = await this.caslAbilityFactory.defineAbility(request.user);
     try {
       rules.forEach((rule) => {
-        ForbiddenError.from(ability).throwUnlessCan(rule.action, rule.subject);
+        ForbiddenError.from(ability).throwUnlessCan(rule.action, this.toSubject(rule.subject, request.params?.id));
       });
       return true;
     } catch (error) {
@@ -30,5 +32,10 @@ export class AbilitiesGuard implements CanActivate {
         });
       }
     }
+  }
+
+  private toSubject(subject: RequiredRule['subject'], id?: string): Subjects {
+    if (!id || typeof subject !== 'function') return subject;
+    return Object.assign(new UserEntity(), { id });
   }
 }
