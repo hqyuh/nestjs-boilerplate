@@ -4,11 +4,10 @@ import { JwtSignOptions, JwtService as NestJwtService } from '@nestjs/jwt';
 import { IJwtService } from './jwt.interface';
 
 @Injectable()
-export class JwtService extends IJwtService {
+export class JwtService implements IJwtService {
   private readonly JWT_SECRET: string;
 
   constructor(private readonly jwtService: NestJwtService) {
-    super();
     this.JWT_SECRET = process.env.JWT_SECRET;
   }
 

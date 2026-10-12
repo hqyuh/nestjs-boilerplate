@@ -29,10 +29,7 @@ describe('App API (e2e)', () => {
   it('GET /api/v1/rbac-admin succeeds for admin', async () => {
     const { accessToken, cookies } = await login(app, 'admin01@example.com', '123456');
 
-    const { body } = await http(app)
-      .get(`${API}/v1/rbac-admin`)
-      .set(authHeader(accessToken, cookies))
-      .expect(200);
+    const { body } = await http(app).get(`${API}/v1/rbac-admin`).set(authHeader(accessToken, cookies)).expect(200);
 
     expect(body.status).toBe(200);
   });

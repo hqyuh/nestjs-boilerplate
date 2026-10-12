@@ -1,5 +1,5 @@
-import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect, FindOptionsWhere } from 'typeorm';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 
 declare global {
   type FindOptions<T extends BaseUuidEntity> = {
@@ -76,5 +76,3 @@ declare global {
     success: boolean;
   };
 }
-
-export {};

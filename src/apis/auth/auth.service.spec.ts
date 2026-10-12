@@ -1,30 +1,31 @@
-import { AccessControlLists, Token } from '@/common/enums/auth.enum';
-import { ICacheService } from '@/module/cache/cache.interface';
-import { IJwtService } from '@/module/jwt/jwt.interface';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
+import { type Mocked, vi } from 'vitest';
+import { AccessControlLists, Token } from '@/common/enums/auth.enum';
+import { ICacheService } from '@/module/cache/cache.interface';
+import { IJwtService } from '@/module/jwt/jwt.interface';
 
 import { IUserService } from '../user/interface/user.interface';
 import { AuthService } from './auth.service';
 import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 
-jest.mock('node:crypto', () => {
-  const actual = jest.requireActual('node:crypto');
+vi.mock('node:crypto', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:crypto')>();
   return {
     ...actual,
-    randomUUID: jest.fn(),
+    randomUUID: vi.fn(),
   };
 });
 
-jest.mock('@/common/logger/logger', () => ({
+vi.mock('@/common/logger/logger', () => ({
   logger: {
-    write: jest.fn(),
-    getMessage: jest.fn(() => 'mocked-message'),
-    writeWithError: jest.fn(),
-    writeWithParameter: jest.fn(),
+    write: vi.fn(),
+    getMessage: vi.fn(() => 'mocked-message'),
+    writeWithError: vi.fn(),
+    writeWithParameter: vi.fn(),
   },
   MsgIds: {
     M005001: 'M005-001',
@@ -48,52 +49,52 @@ const APP_CONFIG = {
 
 const buildMockResponse = () => {
   const res = {
-    cookie: jest.fn().mockReturnThis(),
+    cookie: vi.fn().mockReturnThis(),
   };
   return res as unknown as Response;
 };
 
 describe('AuthService', () => {
   let service: AuthService;
-  let jwtService: jest.Mocked<IJwtService>;
-  let configService: jest.Mocked<ConfigService>;
-  let cacheService: jest.Mocked<ICacheService>;
-  let userService: jest.Mocked<IUserService>;
-  let i18n: jest.Mocked<I18nService>;
+  let jwtService: Mocked<IJwtService>;
+  let configService: Mocked<ConfigService>;
+  let cacheService: Mocked<ICacheService>;
+  let userService: Mocked<IUserService>;
+  let i18n: Mocked<I18nService>;
 
   beforeEach(async () => {
     jwtService = {
-      sign: jest.fn(),
-      verify: jest.fn(),
-    } as unknown as jest.Mocked<IJwtService>;
+      sign: vi.fn(),
+      verify: vi.fn(),
+    } as unknown as Mocked<IJwtService>;
 
     configService = {
-      getOrThrow: jest.fn(),
-    } as unknown as jest.Mocked<ConfigService>;
+      getOrThrow: vi.fn(),
+    } as unknown as Mocked<ConfigService>;
 
     cacheService = {
-      set: jest.fn(),
-      setMany: jest.fn().mockResolvedValue(true),
-      get: jest.fn(),
-      delete: jest.fn(),
-      deleteMany: jest.fn().mockResolvedValue(true),
-    } as unknown as jest.Mocked<ICacheService>;
+      set: vi.fn(),
+      setMany: vi.fn().mockResolvedValue(true),
+      get: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn().mockResolvedValue(true),
+    } as unknown as Mocked<ICacheService>;
 
     userService = {
-      validateUserByEmailPassword: jest.fn(),
-      validateUserById: jest.fn(),
-      createUser: jest.fn(),
-      getAllUserPaginated: jest.fn(),
-      getOneUserById: jest.fn(),
-      removeUserById: jest.fn(),
-      updateUserById: jest.fn(),
-      getOne: jest.fn(),
-      create: jest.fn(),
-    } as unknown as jest.Mocked<IUserService>;
+      validateUserByEmailPassword: vi.fn(),
+      validateUserById: vi.fn(),
+      createUser: vi.fn(),
+      getAllUserPaginated: vi.fn(),
+      getOneUserById: vi.fn(),
+      removeUserById: vi.fn(),
+      updateUserById: vi.fn(),
+      getOne: vi.fn(),
+      create: vi.fn(),
+    } as unknown as Mocked<IUserService>;
 
     i18n = {
-      t: jest.fn().mockImplementation((key: string) => Promise.resolve(key)),
-    } as unknown as jest.Mocked<I18nService>;
+      t: vi.fn().mockImplementation((key: string) => Promise.resolve(key)),
+    } as unknown as Mocked<I18nService>;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -108,11 +109,11 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
 
-    (randomUUID as jest.Mock).mockReturnValueOnce('access-jti').mockReturnValueOnce('refresh-jti');
+    vi.mocked(randomUUID).mockReturnValueOnce('access-jti').mockReturnValueOnce('refresh-jti');
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -236,18 +237,14 @@ describe('AuthService', () => {
     it('throws UnauthorizedException when cached refresh token is missing', async () => {
       cacheService.get.mockResolvedValue(null);
 
-      await expect(service.refreshToken(tokens, buildMockResponse())).rejects.toBeInstanceOf(
-        UnauthorizedException
-      );
+      await expect(service.refreshToken(tokens, buildMockResponse())).rejects.toBeInstanceOf(UnauthorizedException);
       expect(cacheService.deleteMany).not.toHaveBeenCalled();
     });
 
     it('throws UnauthorizedException when cached refresh token does not match', async () => {
       cacheService.get.mockResolvedValue('different-refresh');
 
-      await expect(service.refreshToken(tokens, buildMockResponse())).rejects.toBeInstanceOf(
-        UnauthorizedException
-      );
+      await expect(service.refreshToken(tokens, buildMockResponse())).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('rotates tokens and returns success response on valid refresh', async () => {
@@ -287,18 +284,14 @@ describe('AuthService', () => {
     const tokens: AuthTokens = { accessToken: 'access', refreshToken: 'refresh' };
 
     it('throws UnauthorizedException when access payload is invalid', async () => {
-      jwtService.verify
-        .mockResolvedValueOnce(null as never)
-        .mockResolvedValueOnce({ jti: 'refresh-jti' } as never);
+      jwtService.verify.mockResolvedValueOnce(null as never).mockResolvedValueOnce({ jti: 'refresh-jti' } as never);
 
       await expect(service.logout(tokens)).rejects.toBeInstanceOf(UnauthorizedException);
       expect(cacheService.deleteMany).not.toHaveBeenCalled();
     });
 
     it('throws UnauthorizedException when refresh payload is invalid', async () => {
-      jwtService.verify
-        .mockResolvedValueOnce({ jti: 'access-jti' } as never)
-        .mockResolvedValueOnce(null as never);
+      jwtService.verify.mockResolvedValueOnce({ jti: 'access-jti' } as never).mockResolvedValueOnce(null as never);
 
       await expect(service.logout(tokens)).rejects.toBeInstanceOf(UnauthorizedException);
     });

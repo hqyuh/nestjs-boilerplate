@@ -4,4 +4,3 @@ export enum OAuthProvider {
   TIKTOK = 'TIKTOK',
   APPLE = 'APPLE',
 }
-

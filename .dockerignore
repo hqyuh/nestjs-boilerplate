@@ -4,8 +4,7 @@ test
 .dockerignore
 Dockerfile
 docker-compose.yaml
-.eslintrc.js
+biome.json
 .git
 .gitignore
-.prettierrc
 *.md

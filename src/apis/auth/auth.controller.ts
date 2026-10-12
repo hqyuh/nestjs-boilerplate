@@ -1,8 +1,8 @@
-import { ApiController } from '@/common/base/base.swagger';
-import { Body, Controller, Get, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ApiController } from '@/common/base/base.swagger';
 
 import { AuthStrategy } from './auth.const';
 import { IAuthService } from './auth.interface';
@@ -13,7 +13,7 @@ import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
 @ApiController('Auth')
 @ApiBearerAuth()
 export class AuthController {
-  constructor(private readonly authService: IAuthService) {}
+  constructor(@Inject(IAuthService) private readonly authService: IAuthService) {}
 
   @Post('login')
   @HttpCode(200)

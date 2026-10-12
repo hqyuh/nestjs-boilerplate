@@ -14,5 +14,3 @@ declare global {
   };
   type JwtPayload = UserJwtPayload;
 }
-
-export {};

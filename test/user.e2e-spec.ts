@@ -112,7 +112,13 @@ describe.each(['1', '2'])('User API v%s (e2e)', (version) => {
     await http(app)
       .post(`${API}/v${version}/user`)
       .set(authHeader(userSession.accessToken, userSession.cookies))
-      .send({ username: `e2e.nope.v${version}.${stamp}@example.com`, firstName: 'No', lastName: 'Pe', isActive: true, roleId })
+      .send({
+        username: `e2e.nope.v${version}.${stamp}@example.com`,
+        firstName: 'No',
+        lastName: 'Pe',
+        isActive: true,
+        roleId,
+      })
       .expect(403);
   });
 
@@ -169,15 +175,9 @@ describe.each(['1', '2'])('User API v%s (e2e)', (version) => {
       .send({ firstName: 'Patched' })
       .expect(200);
 
-    await http(app)
-      .delete(`${API}/v${version}/user/${created.id}`)
-      .set(authHeader(accessToken, cookies))
-      .expect(200);
+    await http(app).delete(`${API}/v${version}/user/${created.id}`).set(authHeader(accessToken, cookies)).expect(200);
 
-    await http(app)
-      .get(`${API}/v${version}/user/${created.id}`)
-      .set(authHeader(accessToken, cookies))
-      .expect(404);
+    await http(app).get(`${API}/v${version}/user/${created.id}`).set(authHeader(accessToken, cookies)).expect(404);
   });
 
   it('creates a user through POST /user', async () => {
@@ -187,21 +187,20 @@ describe.each(['1', '2'])('User API v%s (e2e)', (version) => {
       .set(authHeader(accessToken, cookies))
       .expect(200);
 
-    const sample = list.body.data.find((user: { roleId?: string; role?: { id?: string } }) => user.roleId || user.role?.id);
+    const sample = list.body.data.find(
+      (user: { roleId?: string; role?: { id?: string } }) => user.roleId || user.role?.id
+    );
     const roleId = sample?.roleId ?? sample?.role?.id;
     expect(roleId).toEqual(expect.any(String));
     const email = `e2e.post.v${version}.${stamp}@example.com`;
 
-    const created = await http(app)
-      .post(`${API}/v${version}/user`)
-      .set(authHeader(accessToken, cookies))
-      .send({
-        username: email,
-        firstName: 'Created',
-        lastName: 'ViaPost',
-        isActive: true,
-        roleId,
-      });
+    const created = await http(app).post(`${API}/v${version}/user`).set(authHeader(accessToken, cookies)).send({
+      username: email,
+      firstName: 'Created',
+      lastName: 'ViaPost',
+      isActive: true,
+      roleId,
+    });
 
     if (created.status >= 300) {
       throw new Error(`POST /user failed: ${created.status} ${JSON.stringify(created.body)}`);

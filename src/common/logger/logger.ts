@@ -1,7 +1,7 @@
-import { getRequestLogId } from '@/common/context/request-log.context';
 import { config as loadEnv } from 'dotenv';
 import * as winston from 'winston';
 import WinstonDaily from 'winston-daily-rotate-file';
+import { getRequestLogId } from '@/common/context/request-log.context';
 
 // Runs at import time (before Nest ConfigModule); ensures NODE_ENV from .env is visible here.
 loadEnv();
@@ -165,11 +165,11 @@ class WinstonLogger {
     }
     const parserError = error
       ? Object.getOwnPropertyNames(error).reduce(
-          (acc: Record<string, string>, key: string) => ({
-            ...acc,
-            [key]: error[key],
-          }),
-          { name: error }
+          (acc: Record<string, string>, key: string) => {
+            acc[key] = error[key];
+            return acc;
+          },
+          { name: error } as Record<string, string>
         )
       : undefined;
     const logDetails = {

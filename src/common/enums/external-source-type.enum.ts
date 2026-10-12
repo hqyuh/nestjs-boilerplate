@@ -5,4 +5,3 @@ export enum ExternalSourceType {
   INSTAGRAM = 'INSTAGRAM',
   ZALO = 'ZALO',
 }
-

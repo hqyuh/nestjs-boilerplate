@@ -1,7 +1,7 @@
-import { CookieOptions } from "express";
+import { CookieOptions } from 'express';
 
 export interface DatabaseConfig {
-  type: string
+  type: string;
   host: string;
   port: number;
   name: string;
@@ -9,7 +9,6 @@ export interface DatabaseConfig {
   password: string;
   schema: string;
 }
-
 
 export interface RedisConfig {
   host: string;

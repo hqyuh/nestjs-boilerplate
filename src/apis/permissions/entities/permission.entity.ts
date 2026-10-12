@@ -1,21 +1,24 @@
-import { RoleEntity } from '@/apis/roles/entities/role.entity';
-import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow } from 'class-validator';
 import { Column, Entity, ManyToMany } from 'typeorm';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 
 @Entity({ name: 'permission' })
 export class PermissionEntity extends BaseUuidEntity {
   @Allow()
   @ApiProperty({ example: 'This is name role' })
-  @Column()
+  @Column({ type: 'varchar' })
   name?: string;
 
   @Allow()
   @ApiProperty({ example: 'This is permission role' })
-  @Column()
+  @Column({ type: 'varchar' })
   description?: string;
 
-  @ManyToMany(() => RoleEntity, (role) => role.permissions)
+  @ManyToMany(
+    () => RoleEntity,
+    (role) => role.permissions
+  )
   roles: RoleEntity[];
 }

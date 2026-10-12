@@ -1,32 +1,32 @@
+import { hash } from 'argon2';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OAuthAccountEntity } from '@/apis/auth/entities/oauth-account.entity';
 import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
-import { hash } from 'argon2';
-import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity({ name: 'user' })
 export class UserEntity extends BaseUuidEntity {
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar' })
   email: string;
 
   @Index()
-  @Column({ name: 'first_name', nullable: true })
+  @Column({ name: 'first_name', type: 'varchar', nullable: true })
   firstName: string | null;
 
-  @Column({ name: 'middle_name', nullable: true })
+  @Column({ name: 'middle_name', type: 'varchar', nullable: true })
   middleName: string | null;
 
   @Index()
-  @Column({ name: 'last_name', nullable: true })
+  @Column({ name: 'last_name', type: 'varchar', nullable: true })
   lastName: string | null;
 
   @Column({ name: 'password', type: 'text', nullable: true })
   password: string | null;
 
-  @Column({ name: 'phone_number', nullable: true })
+  @Column({ name: 'phone_number', type: 'varchar', nullable: true })
   phoneNumber: string | null;
 
-  @Column({ name: 'avatar_url', nullable: true })
+  @Column({ name: 'avatar_url', type: 'varchar', nullable: true })
   avatarUrl: string | null;
 
   @Column({ name: 'email_verified_at', type: 'timestamp', nullable: true })
@@ -39,7 +39,10 @@ export class UserEntity extends BaseUuidEntity {
   @JoinColumn({ name: 'role_id' })
   role?: RoleEntity | null;
 
-  @OneToMany(() => OAuthAccountEntity, (oauthAccount) => oauthAccount.user)
+  @OneToMany(
+    () => OAuthAccountEntity,
+    (oauthAccount) => oauthAccount.user
+  )
   oauthAccounts: OAuthAccountEntity[];
 
   /**

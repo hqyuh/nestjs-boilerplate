@@ -1,4 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import { ConflictException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { CacheableItem } from 'cacheable';
+import { Response } from 'express';
+import { I18nService } from 'nestjs-i18n';
 import { SuccessResponse } from '@/common/base/success-response';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
 import { logger, MsgIds } from '@/common/logger/logger';
@@ -6,11 +11,6 @@ import { Result } from '@/common/types/auth.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { AppConfig, JWTConfig } from '@/module/configs/interfaces/config.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-import { ConflictException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { CacheableItem } from 'cacheable';
-import { Response } from 'express';
-import { I18nService } from 'nestjs-i18n';
 
 import { IUserService } from '../user/interface/user.interface';
 import { IAuthService } from './auth.interface';
@@ -22,18 +22,16 @@ type JtiTokens = AuthTokens & {
 };
 
 @Injectable()
-export class AuthService extends IAuthService {
+export class AuthService implements IAuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly jwtService: IJwtService,
+    @Inject(IJwtService) private readonly jwtService: IJwtService,
     private readonly configService: ConfigService,
-    private readonly cacheService: ICacheService,
+    @Inject(ICacheService) private readonly cacheService: ICacheService,
     @Inject(IUserService) private readonly userService: IUserService,
     private readonly i18n: I18nService
-  ) {
-    super();
-  }
+  ) {}
 
   async login(loginUserDto: LoginDTO, response: Response): Promise<SuccessResponse<AuthTokens>> {
     const {

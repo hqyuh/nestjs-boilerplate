@@ -3,4 +3,3 @@ export enum SyncJobStatus {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
 }
-

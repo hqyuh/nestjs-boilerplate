@@ -16,15 +16,23 @@
     "typeorm"
   ],
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "biomejs.biome",
+  "js/ts.preferences.quoteStyle": "single",
   "editor.codeActionsOnSave": {
-    "source.fixAll": "always",
-    "source.organizeImports": "always",
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit",
     "source.sortMembers": "always"
-    // "source.addMissingImports": "always"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome"
   },
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
 }

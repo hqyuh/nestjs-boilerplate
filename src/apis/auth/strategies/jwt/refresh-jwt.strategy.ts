@@ -1,15 +1,15 @@
-import { AccessControlLists, Token } from '@/common/enums/auth.enum';
-import { ICacheService } from '@/module/cache/cache.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AccessControlLists, Token } from '@/common/enums/auth.enum';
+import { ICacheService } from '@/module/cache/cache.interface';
 
 import { AuthStrategy } from '../../auth.const';
 
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, AuthStrategy.USER_RF_JWT) {
-  constructor(private readonly cacheService: ICacheService) {
+  constructor(@Inject(ICacheService) private readonly cacheService: ICacheService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {

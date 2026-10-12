@@ -8,10 +8,10 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "format": "prettier --config .prettierrc --check --ignore-unknown \"src/**/*.ts\"",
-    "format:fix": "prettier --config .prettierrc --write --ignore-unknown \"src/**/*.ts\"",
-    "lint": "eslint --ext .ts \"src/**/*.ts\"",
-    "lint:fix": "eslint --ext .ts --fix \"src/**/*.ts\"",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -30,17 +30,15 @@
     "schema:sync": "npm run typeorm -- -d ./src/module/database/data-source.ts schema:sync",
     "seed:run": "ts-node -r tsconfig-paths/register ./src/module/database/seeds/run-seed.ts",
     "db": "pnpm run schema:drop && pnpm run migration:run && pnpm run seed:run",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch",
-    "test:cov": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config ./test/jest-e2e.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:debug": "vitest run --inspect-brk --no-file-parallelism --pool forks",
+    "test:e2e": "pnpm build && vitest run --config vitest.e2e.config.mts",
     "prepare": "husky"
   },
   "dependencies": {
     "@casl/ability": "^7.0.1",
-    "@eslint/eslintrc": "^3.3.7",
-    "@eslint/js": "^10.0.1",
     "@keyv/redis": "^5.1.6",
     "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs/cache-manager": "^12.0.0",
@@ -63,7 +61,7 @@
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.4.0",
     "dotenv": "^18.0.5",
-    "globals": "^17.13.0",
+    "express": "^5.3.0",
     "hbs": "^4.3.1",
     "helmet": "^8.3.0",
     "hygen": "^6.2.11",
@@ -91,77 +89,38 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "@nestjs/cli": "^12.0.8",
     "@nestjs/schematics": "^12.0.6",
     "@nestjs/testing": "^12.1.2",
+    "@swc/core": "^1.16.18",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
-    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.25",
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.6.4",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^7.2.1",
-    "@typescript-eslint/eslint-plugin": "8.71.0",
-    "@typescript-eslint/parser": "8.71.0",
+    "@vitest/coverage-v8": "^5.0.4",
     "env-cmd": "^11.0.0",
-    "eslint": "^10.11.0",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-prettier": "^5.5.6",
     "husky": "^9.1.7",
-    "jest": "^30.5.2",
     "lint-staged": "^17.6.0",
-    "prettier": "^3.9.9",
     "source-map-support": "^0.5.21",
     "supertest": "^7.3.0",
-    "ts-jest": "^29.4.14",
     "ts-loader": "^9.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.3",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^5.0.4",
     "webpack": "5.111.1"
   },
   "engines": {
     "node": ">=26.10.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverage": false,
-    "collectCoverageFrom": [
-      "**/*.(service|handler).(t|j)s"
-    ],
-    "coveragePathIgnorePatterns": [
-      "mocks"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1",
-      "^@module/(.*)$": "<rootDir>/module/$1",
-      "^@common/(.*)$": "<rootDir>/common/$1",
-      "^@apis/(.*)$": "<rootDir>/apis/$1",
-      "^packageJson$": "<rootDir>/../package.json"
-    },
-    "testPathIgnorePatterns": [
-      "<rootDir>/node_modules/",
-      "<rootDir>/dist/"
-    ],
-    "maxWorkers": 1,
-    "detectOpenHandles": true
   },
   "packageManager": "pnpm@10.4.0",
   "pnpm": {

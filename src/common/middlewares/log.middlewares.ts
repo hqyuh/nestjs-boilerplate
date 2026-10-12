@@ -1,9 +1,9 @@
-import { getRequestLogId } from '@/common/context/request-log.context';
-import { REQUEST_ID_HEADER } from '@/common/middlewares/request-id.constants';
-import type { RequestWithRequestId } from '@/common/middlewares/correlation-id.middleware';
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { isEmpty } from 'lodash';
+import { getRequestLogId } from '@/common/context/request-log.context';
+import type { RequestWithRequestId } from '@/common/middlewares/correlation-id.middleware';
+import { REQUEST_ID_HEADER } from '@/common/middlewares/request-id.constants';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
@@ -16,7 +16,7 @@ export class LoggerMiddleware implements NestMiddleware {
     const { method, body, query, headers } = req;
     const originalUrl = req.originalUrl.replace(/\?.*$/, '');
     const ip = headers['x-forwarded-for'];
-    const host = headers['host'];
+    const host = headers.host;
     const begin = Date.now();
 
     this.logger.verbose(`${idPrefix}[${method}] - ${host} - ${originalUrl} - ${ip}`);

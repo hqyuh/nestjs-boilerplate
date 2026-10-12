@@ -4,10 +4,8 @@ import { Cacheable, CacheableItem } from 'cacheable';
 
 import { ICacheService } from './cache.interface';
 
-export class CacheService extends ICacheService {
-  constructor(@Inject(CACHE_MANAGER) private readonly cache: Cacheable) {
-    super();
-  }
+export class CacheService implements ICacheService {
+  constructor(@Inject(CACHE_MANAGER) private readonly cache: Cacheable) {}
 
   async set<T>(key: string, value: T, expired?: number | string): Promise<boolean> {
     await this.delete(key);

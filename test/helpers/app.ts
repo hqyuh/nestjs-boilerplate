@@ -1,13 +1,13 @@
-import { AppModule } from '@/app.module';
-import { GLOBAL_PATH } from '@/common/constant/route.constant';
 import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import type { SuperAgentTest } from 'supertest';
 import request from 'supertest';
+import { AppModule } from '@/app.module';
+import { GLOBAL_PATH } from '@/common/constant/route.constant';
 
-import { SWAGGER_API_CURRENT_VERSION } from '../../src/common/swagger/swagger.const';
+import { SWAGGER_API_CURRENT_VERSION } from '@/common/swagger/swagger.const';
 
 export const API = `/${GLOBAL_PATH}`;
 

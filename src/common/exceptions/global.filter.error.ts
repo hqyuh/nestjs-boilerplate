@@ -15,13 +15,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Default response for untrusted exceptions
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal Server Error';
-    let detail = undefined;
+    let detail: Record<string, unknown> | undefined;
 
     // Handle trusted exceptions
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;
-      detail = exception.cause;
+      detail = exception.cause as Record<string, unknown> | undefined;
     }
 
     // Send the response with the appropriate status and message
