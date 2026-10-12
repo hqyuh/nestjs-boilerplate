@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsString } from '@/common/decorator/validation.decorator';
-import { lowerCaseTransformer } from '@/common/utils/transformer/upper-lower-case.transformer';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from '@/common/decorator/validation.decorator';
+import { lowerCaseTransformer } from '@/common/utils/transformer/upper-lower-case.transformer';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Login username' })

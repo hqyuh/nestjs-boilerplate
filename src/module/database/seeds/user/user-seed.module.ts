@@ -1,7 +1,7 @@
-import { RoleEntity } from '@/apis/roles/entities/role.entity';
-import { UserEntity } from '@/apis/user/entities/user.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
+import { UserEntity } from '@/apis/user/entities/user.entity';
 
 import { UserSeedService } from './user-seed.service';
 

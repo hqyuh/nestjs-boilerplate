@@ -1,8 +1,8 @@
-import { PermissionEntity } from '@/apis/permissions/entities/permission.entity';
-import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PermissionEntity } from '@/apis/permissions/entities/permission.entity';
+import { RoleEntity } from '@/apis/roles/entities/role.entity';
 
 @Injectable()
 export class RoleSeedService {

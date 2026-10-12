@@ -1,6 +1,6 @@
-import { IsEmail, IsNotEmpty, IsString } from '@/common/decorator/validation.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 import { MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from '@/common/decorator/validation.decorator';
 
 export class LoginDTO {
   /** Email */

@@ -1,6 +1,6 @@
-import { getEnv } from '@/module/configs/env';
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { getEnv } from '@/module/configs/env';
 
 import configuration, { validate } from './configuration';
 

@@ -1,4 +1,3 @@
-import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 import {
   DeepPartial,
   DeleteResult,
@@ -7,6 +6,7 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
+import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 
 /**
  * @template T Type of the record data

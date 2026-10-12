@@ -1,8 +1,3 @@
-import { AppModule } from '@/app.module';
-import { GLOBAL_PATH } from '@/common/constant/route.constant';
-import { logger, MsgIds } from '@/common/logger/logger';
-import { ensureRequestIdMiddleware, morganRequestIdToken } from '@/common/middlewares/correlation-id.middleware';
-import { setupSwagger } from '@/common/swagger';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -11,6 +6,11 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { AppModule } from '@/app.module';
+import { GLOBAL_PATH } from '@/common/constant/route.constant';
+import { logger, MsgIds } from '@/common/logger/logger';
+import { ensureRequestIdMiddleware, morganRequestIdToken } from '@/common/middlewares/correlation-id.middleware';
+import { setupSwagger } from '@/common/swagger';
 
 import { SWAGGER_API_CURRENT_VERSION } from './common/swagger/swagger.const';
 

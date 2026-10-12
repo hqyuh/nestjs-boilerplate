@@ -1,6 +1,6 @@
-import { translate } from '@/module/i18n/i18n.helper';
 import { applyDecorators } from '@nestjs/common';
 import * as validator from 'class-validator';
+import { translate } from '@/module/i18n/i18n.helper';
 
 import { logger, MsgIds } from '../logger/logger';
 

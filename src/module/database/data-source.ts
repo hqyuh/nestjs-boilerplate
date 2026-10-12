@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { resolve } from 'path';
 import { config } from 'dotenv';
+import { resolve } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 // Load environment variables from root .env file

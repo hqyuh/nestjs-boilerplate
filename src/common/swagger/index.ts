@@ -1,6 +1,6 @@
-import { GLOBAL_PATH } from '@/common/constant/route.constant';
 import { INestApplication, Logger } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { GLOBAL_PATH } from '@/common/constant/route.constant';
 
 import {
   SWAGGER_API_CURRENT_VERSION,
