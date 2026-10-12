@@ -123,7 +123,8 @@
   "packageManager": "pnpm@10.4.0",
   "pnpm": {
     "overrides": {
-      "webpack": "5.111.1"
+      "webpack": "5.111.1",
+      "chokidar": "4.0.3"
     }
   }
 }
