@@ -1,6 +1,0 @@
-export enum SpotStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  ARCHIVED = 'ARCHIVED',
-}

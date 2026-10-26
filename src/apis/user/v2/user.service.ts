@@ -71,7 +71,13 @@ export class UserService implements IUserService {
     return this.userRepository.updateById(id, updateUserDto);
   }
 
-  create(data: DeepPartial<UserEntity>): Promise<UserEntity> {
+  async create(data: DeepPartial<UserEntity>): Promise<UserEntity> {
+    if (data.role?.name && !data.roleId) {
+      const role = await this.roleRepo.findOne({ where: { name: data.role.name } });
+      if (!role) throw new NotFoundException('Role not found');
+      data.role = role;
+      data.roleId = role.id;
+    }
     return this.userRepository.create(data);
   }
 

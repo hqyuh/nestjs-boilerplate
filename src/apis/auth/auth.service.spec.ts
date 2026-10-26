@@ -4,10 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
 import { type Mocked, vi } from 'vitest';
+import { RoleEnum } from '@/apis/roles/roles.enum';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-
 import { IUserService } from '../user/interface/user.interface';
 import { AuthService } from './auth.service';
 import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
@@ -109,7 +109,9 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
 
-    vi.mocked(randomUUID).mockReturnValueOnce('access-jti').mockReturnValueOnce('refresh-jti');
+    vi.mocked(randomUUID)
+      .mockReturnValueOnce('access-jti' as ReturnType<typeof randomUUID>)
+      .mockReturnValueOnce('refresh-jti' as ReturnType<typeof randomUUID>);
   });
 
   afterEach(() => {
@@ -206,6 +208,7 @@ describe('AuthService', () => {
         password: registerDto.password,
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
+        role: { name: RoleEnum.USER },
       });
       expect(result.data).toEqual({ success: true });
       expect(result.messages).toBe('auth.register_success');

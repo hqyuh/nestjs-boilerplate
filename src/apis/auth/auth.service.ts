@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { CacheableItem } from 'cacheable';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
+import { RoleEnum } from '@/apis/roles/roles.enum';
 import { SuccessResponse } from '@/common/base/success-response';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
 import { logger, MsgIds } from '@/common/logger/logger';
@@ -11,7 +12,6 @@ import { Result } from '@/common/types/auth.dto';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { AppConfig, JWTConfig } from '@/module/configs/interfaces/config.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
-
 import { IUserService } from '../user/interface/user.interface';
 import { IAuthService } from './auth.interface';
 import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
@@ -91,7 +91,7 @@ export class AuthService implements IAuthService {
     const user = await this.userService.getOne({ where: { email: registerDto.email } });
 
     // If user already exists, throw conflict exception
-    if (user) throw new ConflictException(this.i18n.t('conflict_user'));
+    if (user) throw new ConflictException(this.i18n.t('auth.conflict_user'));
 
     // Create new user
     await this.userService.create({
@@ -99,6 +99,9 @@ export class AuthService implements IAuthService {
       password: registerDto.password,
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
+      role: {
+        name: RoleEnum.USER,
+      },
     });
 
     return new SuccessResponse({
@@ -146,7 +149,7 @@ export class AuthService implements IAuthService {
     );
 
     if (!cachedRefreshToken || cachedRefreshToken !== authTokens.refreshToken) {
-      throw new UnauthorizedException(this.i18n.t('access_denied'));
+      throw new UnauthorizedException(await this.i18n.t('auth.access_denied'));
     }
 
     this.cacheService.deleteMany([
@@ -160,7 +163,7 @@ export class AuthService implements IAuthService {
       email: user.email,
       fisrtName: user.firstName,
       lastName: user.lastName,
-      role: user.role.name,
+      role: user.role?.name ?? RoleEnum.USER,
     };
 
     const { accessToken, refreshToken, accessJti, refreshJti } = await this.generateToken(payload);
@@ -200,7 +203,7 @@ export class AuthService implements IAuthService {
     const refreshPayload = await this.jwtService.verify(refreshToken);
 
     if (!accessPayload || !refreshPayload) {
-      throw new UnauthorizedException(this.i18n.t('access_denied'));
+      throw new UnauthorizedException(await this.i18n.t('auth.access_denied'));
     }
 
     // keep blacklist entries for 7 days

@@ -1,14 +1,12 @@
 import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { extend } from 'lodash';
 import { DeepPartial, DeleteResult, FindOptionsWhere, QueryDeepPartialEntity, Repository, UpdateResult } from 'typeorm';
-import { AbstractBaseService } from '@/common/base/base.abstract';
+import { IBaseService } from '@/common/base/base.interface';
 import { BaseUuidEntity } from './base-uuid.entity';
 
-export abstract class BaseService<T extends BaseUuidEntity> extends AbstractBaseService<T> {
+export abstract class BaseService<T extends BaseUuidEntity> implements IBaseService<T> {
   abstract notFoundMessage: string;
-  constructor(private readonly repository: Repository<T>) {
-    super();
-  }
+  constructor(private readonly repository: Repository<T>) {}
 
   create(data: DeepPartial<T>): Promise<T> {
     return this.repository.create(data).save();
