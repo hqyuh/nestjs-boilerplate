@@ -51,6 +51,8 @@ export class UserEntity extends BaseUuidEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async beforePersist() {
-    this.password = await hash(this.password);
+    if (this.password) {
+      this.password = await hash(this.password);
+    }
   }
 }

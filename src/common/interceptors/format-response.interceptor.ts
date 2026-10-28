@@ -17,6 +17,9 @@ export class FormatResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
+        if (data == null || response.headersSent) {
+          return data;
+        }
         if (data.data && data.pagination) {
           return {
             status,

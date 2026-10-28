@@ -12,6 +12,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     this.logger.error(exception);
 
+    if (response.headersSent) {
+      return;
+    }
+
     // Default response for untrusted exceptions
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal Server Error';

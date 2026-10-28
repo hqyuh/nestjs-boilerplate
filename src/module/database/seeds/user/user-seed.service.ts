@@ -230,5 +230,39 @@ export class UserSeedService {
 
       await this.repository.save(users);
     }
+
+    await this.ensureE2ePasswords();
+  }
+
+  /** E2E logs in as these users with 123456 even when auto-seed skipped the empty-table insert. */
+  private async ensureE2ePasswords() {
+    const adminRole = await this.roleRepository.findOne({ where: { name: 'Admin' } });
+    const userRole = await this.roleRepository.findOne({ where: { name: 'User' } });
+    if (!adminRole || !userRole) return;
+
+    const accounts = [
+      { email: 'admin01@example.com', firstName: 'Admin', lastName: 'User 01', roleId: adminRole.id },
+      { email: 'user01@example.com', firstName: 'John', lastName: 'Doe', roleId: userRole.id },
+      { email: 'user02@example.com', firstName: 'Jane', lastName: 'Smith', roleId: userRole.id },
+    ];
+
+    for (const account of accounts) {
+      const user = await this.repository.findOne({ where: { email: account.email } });
+      if (user) {
+        user.password = '123456';
+        await this.repository.save(user);
+        continue;
+      }
+      await this.repository.save(
+        this.repository.create({
+          ...account,
+          password: '123456',
+          middleName: null,
+          phoneNumber: null,
+          avatarUrl: null,
+          emailVerifiedAt: new Date(),
+        })
+      );
+    }
   }
 }

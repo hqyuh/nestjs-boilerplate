@@ -24,6 +24,20 @@ export interface JWTConfig {
   refreshTime: number;
 }
 
+export interface GoogleConfig {
+  clientId: string;
+  clientSecret: string;
+  callbackUrl: string;
+  frontendRedirect: string;
+}
+
+export interface FacebookConfig {
+  appId: string;
+  appSecret: string;
+  callbackUrl: string;
+  frontendRedirect: string;
+}
+
 export interface AppConfig {
   port: number;
   environment: string;
@@ -32,4 +46,6 @@ export interface AppConfig {
   cookie: CookieOptions;
   database: DatabaseConfig;
   redis: RedisConfig;
+  google: GoogleConfig;
+  facebook: FacebookConfig;
 }

@@ -1,16 +1,22 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
 import { type Mocked, vi } from 'vitest';
 import { RoleEnum } from '@/apis/roles/roles.enum';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
+import { OAuthProvider } from '@/common/enums/oauth-provider.enum';
 import { ICacheService } from '@/module/cache/cache.interface';
 import { IJwtService } from '@/module/jwt/jwt.interface';
+import { UserEntity } from '../user/entities/user.entity';
 import { IUserService } from '../user/interface/user.interface';
 import { AuthService } from './auth.service';
-import { AuthTokens, LoginDTO, RegisterDTO } from './dto/auth.dto';
+import { AuthTokens, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
+import { OAuthAccountEntity } from './entities/oauth-account.entity';
+import { FacebookTokenVerifier } from './facebook-token.verifier';
+import { GoogleTokenVerifier } from './google-token.verifier';
 
 vi.mock('node:crypto', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:crypto')>();
@@ -60,6 +66,13 @@ describe('AuthService', () => {
   let configService: Mocked<ConfigService>;
   let cacheService: Mocked<ICacheService>;
   let userService: Mocked<IUserService>;
+  let oauthAccountRepo: {
+    findOne: ReturnType<typeof vi.fn>;
+    save: ReturnType<typeof vi.fn>;
+    manager: { update: ReturnType<typeof vi.fn> };
+  };
+  let googleTokenVerifier: Mocked<Pick<GoogleTokenVerifier, 'verify'>>;
+  let facebookTokenVerifier: Mocked<Pick<FacebookTokenVerifier, 'verify'>>;
   let i18n: Mocked<I18nService>;
 
   beforeEach(async () => {
@@ -96,6 +109,18 @@ describe('AuthService', () => {
       t: vi.fn().mockImplementation((key: string) => Promise.resolve(key)),
     } as unknown as Mocked<I18nService>;
 
+    oauthAccountRepo = {
+      findOne: vi.fn(),
+      save: vi.fn(),
+      manager: { update: vi.fn().mockResolvedValue({ affected: 1 }) },
+    };
+    googleTokenVerifier = {
+      verify: vi.fn(),
+    };
+    facebookTokenVerifier = {
+      verify: vi.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -103,6 +128,9 @@ describe('AuthService', () => {
         { provide: ConfigService, useValue: configService },
         { provide: ICacheService, useValue: cacheService },
         { provide: IUserService, useValue: userService },
+        { provide: getRepositoryToken(OAuthAccountEntity), useValue: oauthAccountRepo },
+        { provide: GoogleTokenVerifier, useValue: googleTokenVerifier },
+        { provide: FacebookTokenVerifier, useValue: facebookTokenVerifier },
         { provide: I18nService, useValue: i18n },
       ],
     }).compile();
@@ -212,6 +240,209 @@ describe('AuthService', () => {
       });
       expect(result.data).toEqual({ success: true });
       expect(result.messages).toBe('auth.register_success');
+    });
+  });
+
+  describe('loginWithGoogle', () => {
+    const profile: OauthProfileDto = {
+      providerAccountId: 'google-sub',
+      email: 'google-user@example.com',
+      firstName: 'Gia',
+      lastName: 'User',
+      avatarUrl: 'https://lh3.googleusercontent.com/a/google-avatar',
+    };
+    const googleUser = {
+      id: 'google-user-id',
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatarUrl: null as string | null,
+      role: { name: RoleEnum.USER },
+    };
+
+    beforeEach(() => {
+      configService.getOrThrow.mockImplementation((key: string) => {
+        if (key === 'app') return APP_CONFIG;
+        if (key === 'app.jwt') return APP_CONFIG.jwt;
+        return undefined;
+      });
+      jwtService.sign.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+    });
+
+    it('issues tokens for an existing Google account', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue({ user: googleUser });
+
+      const result = await service.loginWithGoogle(profile, buildMockResponse());
+
+      expect(userService.create).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.save).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.manager.update).toHaveBeenCalledWith(
+        UserEntity,
+        { id: googleUser.id },
+        { avatarUrl: profile.avatarUrl }
+      );
+      expect(result.data).toEqual({ accessToken: 'access-token', refreshToken: 'refresh-token' });
+    });
+
+    it('links Google to an existing email user', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue(null);
+      userService.getOne.mockResolvedValue(googleUser as never);
+      oauthAccountRepo.save.mockResolvedValue({});
+
+      await service.loginWithGoogle(profile, buildMockResponse());
+
+      expect(userService.create).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: googleUser.id,
+          providerAccountId: profile.providerAccountId,
+        })
+      );
+    });
+
+    it('creates a user without password for a new Google account', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue(null);
+      userService.getOne.mockResolvedValue(null);
+      userService.create.mockResolvedValue(googleUser as never);
+      oauthAccountRepo.save.mockResolvedValue({});
+
+      await service.loginWithGoogle(profile, buildMockResponse());
+
+      expect(userService.create).toHaveBeenCalledWith({
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        avatarUrl: profile.avatarUrl,
+        password: null,
+        role: { name: RoleEnum.USER },
+      });
+    });
+  });
+
+  describe('loginWithGoogleIdToken', () => {
+    it('rejects an invalid id token', async () => {
+      googleTokenVerifier.verify.mockRejectedValue(new UnauthorizedException('Invalid Google token'));
+
+      await expect(service.loginWithGoogleIdToken('not-a-jwt', buildMockResponse())).rejects.toBeInstanceOf(
+        UnauthorizedException
+      );
+    });
+
+    it('issues tokens after a valid id token is verified', async () => {
+      const verifiedProfile: OauthProfileDto = {
+        providerAccountId: 'google-sub',
+        email: 'google-user@example.com',
+        firstName: 'Gia',
+        lastName: 'User',
+      };
+      googleTokenVerifier.verify.mockResolvedValue(verifiedProfile);
+      oauthAccountRepo.findOne.mockResolvedValue({
+        user: {
+          id: 'google-user-id',
+          email: verifiedProfile.email,
+          firstName: verifiedProfile.firstName,
+          lastName: verifiedProfile.lastName,
+          role: { name: RoleEnum.USER },
+        },
+      });
+      configService.getOrThrow.mockImplementation((key: string) => {
+        if (key === 'app') return APP_CONFIG;
+        if (key === 'app.jwt') return APP_CONFIG.jwt;
+        return undefined;
+      });
+      jwtService.sign.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+
+      const result = await service.loginWithGoogleIdToken('valid-id-token', buildMockResponse());
+
+      expect(googleTokenVerifier.verify).toHaveBeenCalledWith('valid-id-token');
+      expect(result.data).toEqual({ accessToken: 'access-token', refreshToken: 'refresh-token' });
+    });
+  });
+
+  describe('loginWithFacebook', () => {
+    const profile: OauthProfileDto = {
+      providerAccountId: 'facebook-id',
+      email: 'facebook-user@example.com',
+      firstName: 'Fb',
+      lastName: 'User',
+      avatarUrl: 'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=facebook-id',
+    };
+    const facebookUser = {
+      id: 'facebook-user-id',
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatarUrl: null as string | null,
+      role: { name: RoleEnum.USER },
+    };
+
+    beforeEach(() => {
+      configService.getOrThrow.mockImplementation((key: string) => {
+        if (key === 'app') return APP_CONFIG;
+        if (key === 'app.jwt') return APP_CONFIG.jwt;
+        return undefined;
+      });
+      jwtService.sign.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+    });
+
+    it('issues tokens for an existing Facebook account', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue({ user: facebookUser });
+
+      const result = await service.loginWithFacebook(profile, buildMockResponse());
+
+      expect(userService.create).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.save).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.manager.update).toHaveBeenCalledWith(
+        UserEntity,
+        { id: facebookUser.id },
+        { avatarUrl: profile.avatarUrl }
+      );
+      expect(result.data).toEqual({ accessToken: 'access-token', refreshToken: 'refresh-token' });
+    });
+
+    it('links Facebook to an existing email user', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue(null);
+      userService.getOne.mockResolvedValue(facebookUser as never);
+      oauthAccountRepo.save.mockResolvedValue({});
+
+      await service.loginWithFacebook(profile, buildMockResponse());
+
+      expect(userService.create).not.toHaveBeenCalled();
+      expect(oauthAccountRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: facebookUser.id,
+          providerAccountId: profile.providerAccountId,
+          provider: OAuthProvider.FACEBOOK,
+        })
+      );
+    });
+
+    it('creates a user without password for a new Facebook account', async () => {
+      oauthAccountRepo.findOne.mockResolvedValue(null);
+      userService.getOne.mockResolvedValue(null);
+      userService.create.mockResolvedValue(facebookUser as never);
+      oauthAccountRepo.save.mockResolvedValue({});
+
+      await service.loginWithFacebook(profile, buildMockResponse());
+
+      expect(userService.create).toHaveBeenCalledWith({
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        avatarUrl: profile.avatarUrl,
+        password: null,
+        role: { name: RoleEnum.USER },
+      });
+    });
+  });
+
+  describe('loginWithFacebookAccessToken', () => {
+    it('rejects an invalid access token', async () => {
+      facebookTokenVerifier.verify.mockRejectedValue(new UnauthorizedException('Invalid Facebook token'));
+
+      await expect(service.loginWithFacebookAccessToken('not-a-token', buildMockResponse())).rejects.toBeInstanceOf(
+        UnauthorizedException
+      );
     });
   });
 

@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { plainToClass, Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -80,6 +80,38 @@ class EnvironmentVariables {
 
   @IsString()
   REDIS_PREFIX: string = 'nest-boilerplate:';
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_CLIENT_ID: string = '';
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_CLIENT_SECRET: string = '';
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_CALLBACK_URL: string = 'http://localhost:3000/api/v1/auth/google/callback';
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_FRONTEND_REDIRECT: string = '';
+
+  @IsOptional()
+  @IsString()
+  FACEBOOK_APP_ID: string = '';
+
+  @IsOptional()
+  @IsString()
+  FACEBOOK_APP_SECRET: string = '';
+
+  @IsOptional()
+  @IsString()
+  FACEBOOK_CALLBACK_URL: string = 'http://localhost:3000/api/v1/auth/facebook/callback';
+
+  @IsOptional()
+  @IsString()
+  FACEBOOK_FRONTEND_REDIRECT: string = '';
 }
 
 export function validate(config: Record<string, unknown>) {
@@ -131,6 +163,20 @@ export default registerAs('app', () => ({
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
     keyPrefix: process.env.REDIS_PREFIX,
+  },
+
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/v1/auth/google/callback',
+    frontendRedirect: process.env.GOOGLE_FRONTEND_REDIRECT || '',
+  },
+
+  facebook: {
+    appId: process.env.FACEBOOK_APP_ID || '',
+    appSecret: process.env.FACEBOOK_APP_SECRET || '',
+    callbackUrl: process.env.FACEBOOK_CALLBACK_URL || 'http://localhost:3000/api/v1/auth/facebook/callback',
+    frontendRedirect: process.env.FACEBOOK_FRONTEND_REDIRECT || process.env.GOOGLE_FRONTEND_REDIRECT || '',
   },
 }));
 

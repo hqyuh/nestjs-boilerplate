@@ -7,3 +7,6 @@ create new controller ⇒ nest g controller <name_controller>
 create new service ⇒ nest g service <name_controller>
 
 pnpm run typeorm -- migration:create ./src/module/database/migrations/<name>
+
+rm .claude/skills
+ln -s ../.agents/skills .claude/skills

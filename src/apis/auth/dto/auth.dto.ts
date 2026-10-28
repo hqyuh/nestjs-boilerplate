@@ -53,6 +53,31 @@ export class RegisterDTO {
   lastName: string;
 }
 
+export class GoogleIdTokenDto {
+  @ApiProperty({ description: 'Google ID token from the mobile Google Sign-In SDK' })
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}
+
+export class FacebookAccessTokenDto {
+  @ApiProperty({ description: 'Facebook access token from the mobile Facebook Login SDK' })
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string;
+}
+
+export class OauthProfileDto {
+  providerAccountId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
+}
+
 export class AuthTokens {
   @ApiProperty({ description: 'Access Token' })
   @IsString()
