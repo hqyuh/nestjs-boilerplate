@@ -84,14 +84,18 @@ export abstract class BaseService<T extends BaseUuidEntity> implements IBaseServ
     const take = limit === -1 ? undefined : limit;
     const skip = limit === -1 ? undefined : limit * (+page - 1);
     const findAndCountOptions = { where, order, relations, take, skip, loadEagerRelations, withDeleted, select };
-    const [data, total] = await this.repository.findAndCount(findAndCountOptions);
+    const [data, totalItems] = await this.repository.findAndCount(findAndCountOptions);
+    const resolvedLimit = limit === -1 ? totalItems : limit;
+    const resolvedPage = limit === -1 ? 1 : page;
+    const totalPages = resolvedLimit > 0 ? Math.ceil(totalItems / resolvedLimit) : 0;
 
     return {
       data,
       pagination: {
-        limit: limit === -1 ? total : limit,
-        page: limit === -1 ? 1 : page,
-        total,
+        page: resolvedPage,
+        limit: resolvedLimit,
+        totalItems,
+        totalPages,
       },
     };
   }

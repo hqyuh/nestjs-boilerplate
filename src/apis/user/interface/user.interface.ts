@@ -1,5 +1,5 @@
+import { PaginateQuery } from 'nestjs-paginate';
 import { DeepPartial } from 'typeorm';
-import { PaginationDto } from '@/common/base/base.dto';
 
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserByIdDto } from '../dto/update-user-by-id.dto';
@@ -16,7 +16,7 @@ export interface IUserService {
   validateUserByEmailPassword(email: string, password: string): Promise<UserEntity>;
   validateUserById(id: string): Promise<UserEntity>;
   createUser(createUserDto: CreateUserDto): Promise<UserEntity>;
-  getAllUserPaginated(query: PaginationDto): Promise<IPaginationResponse<UserEntity>>;
+  getAllUserPaginated(query: PaginateQuery): Promise<IPaginationResponse<UserEntity>>;
   getOneUserById(id: string): Promise<UserEntity>;
   removeUserById(id: string): Promise<UserEntity>;
   updateUserById(id: string, updateUserDto: UpdateUserByIdDto): Promise<UserEntity>;

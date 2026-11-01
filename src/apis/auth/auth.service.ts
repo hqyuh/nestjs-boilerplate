@@ -2,10 +2,11 @@ import { randomUUID } from 'node:crypto';
 import { ConflictException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { verify } from 'argon2';
 import { CacheableItem } from 'cacheable';
 import { Response } from 'express';
 import { I18nService } from 'nestjs-i18n';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { RoleEnum } from '@/apis/roles/roles.enum';
 import { SuccessResponse } from '@/common/base/success-response';
 import { AccessControlLists, Token } from '@/common/enums/auth.enum';
@@ -18,14 +19,32 @@ import { IJwtService } from '@/module/jwt/jwt.interface';
 import { UserEntity } from '../user/entities/user.entity';
 import { IUserService } from '../user/interface/user.interface';
 import { IAuthService } from './auth.interface';
-import { AuthTokens, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
+import { AuthTokens, ChangePasswordDto, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
 import { OAuthAccountEntity } from './entities/oauth-account.entity';
+import { UserSessionEntity } from './entities/user-session.entity';
 import { FacebookTokenVerifier } from './facebook-token.verifier';
 import { GoogleTokenVerifier } from './google-token.verifier';
 
 type JtiTokens = AuthTokens & {
   accessJti: string;
   refreshJti: string;
+};
+
+type AuthTokenSession = {
+  expirationTime: number;
+  refreshTime: number;
+  sameSite: AppConfig['cookie']['sameSite'];
+  maxAge: number;
+  deviceName?: string;
+};
+
+type PersistUserSessionParams = {
+  userId: string;
+  accessJti: string;
+  refreshJti: string;
+  refreshTime: number;
+  deviceName?: string;
+  previousRefreshJti?: string;
 };
 
 @Injectable()
@@ -38,12 +57,13 @@ export class AuthService implements IAuthService {
     @Inject(ICacheService) private readonly cacheService: ICacheService,
     @Inject(IUserService) private readonly userService: IUserService,
     @InjectRepository(OAuthAccountEntity) private readonly oauthAccountRepo: Repository<OAuthAccountEntity>,
+    @InjectRepository(UserSessionEntity) private readonly userSessionRepo: Repository<UserSessionEntity>,
     private readonly googleTokenVerifier: GoogleTokenVerifier,
     private readonly facebookTokenVerifier: FacebookTokenVerifier,
     private readonly i18n: I18nService
   ) {}
 
-  async login(loginUserDto: LoginDTO, response: Response): Promise<SuccessResponse<AuthTokens>> {
+  async login(loginUserDto: LoginDTO, response: Response, deviceName?: string): Promise<SuccessResponse<AuthTokens>> {
     const {
       jwt: { expirationTime, refreshTime },
       cookie: { sameSite, maxAge },
@@ -52,25 +72,41 @@ export class AuthService implements IAuthService {
     const { email, password } = loginUserDto;
 
     const user = await this.userService.validateUserByEmailPassword(email, password);
-    return this.generateToken(user, response, { expirationTime, refreshTime, sameSite, maxAge });
+    return this.generateToken(user, response, { expirationTime, refreshTime, sameSite, maxAge, deviceName });
   }
 
-  async loginWithGoogle(profile: OauthProfileDto, response: Response): Promise<SuccessResponse<AuthTokens>> {
-    return this.loginWithOauth(OAuthProvider.GOOGLE, profile, response);
+  async loginWithGoogle(
+    profile: OauthProfileDto,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>> {
+    return this.loginWithOauth(OAuthProvider.GOOGLE, profile, response, deviceName);
   }
 
-  async loginWithGoogleIdToken(idToken: string, response: Response): Promise<SuccessResponse<AuthTokens>> {
+  async loginWithGoogleIdToken(
+    idToken: string,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>> {
     const profile = await this.googleTokenVerifier.verify(idToken);
-    return this.loginWithGoogle(profile, response);
+    return this.loginWithGoogle(profile, response, deviceName);
   }
 
-  async loginWithFacebook(profile: OauthProfileDto, response: Response): Promise<SuccessResponse<AuthTokens>> {
-    return this.loginWithOauth(OAuthProvider.FACEBOOK, profile, response);
+  async loginWithFacebook(
+    profile: OauthProfileDto,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>> {
+    return this.loginWithOauth(OAuthProvider.FACEBOOK, profile, response, deviceName);
   }
 
-  async loginWithFacebookAccessToken(accessToken: string, response: Response): Promise<SuccessResponse<AuthTokens>> {
+  async loginWithFacebookAccessToken(
+    accessToken: string,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>> {
     const profile = await this.facebookTokenVerifier.verify(accessToken);
-    return this.loginWithFacebook(profile, response);
+    return this.loginWithFacebook(profile, response, deviceName);
   }
 
   async register(registerDto: RegisterDTO): Promise<SuccessResponse<Result>> {
@@ -102,22 +138,23 @@ export class AuthService implements IAuthService {
   private async loginWithOauth(
     provider: OAuthProvider,
     profile: OauthProfileDto,
-    response: Response
+    response: Response,
+    deviceName?: string
   ): Promise<SuccessResponse<AuthTokens>> {
     const {
-      environment,
       jwt: { expirationTime, refreshTime },
       cookie: { sameSite, maxAge },
     } = this.configService.getOrThrow<AppConfig>('app');
 
     const user = await this.findOrCreateOauthUser(provider, profile);
-    const result = await this.generateToken(user, response, { expirationTime, refreshTime, sameSite, maxAge });
+    const result = await this.generateToken(user, response, {
+      expirationTime,
+      refreshTime,
+      sameSite,
+      maxAge,
+      deviceName,
+    });
     this.logger.log(`OAuth ${provider} login ok email=${user.email} avatarUrl=${user.avatarUrl ?? 'null'}`);
-    if (environment !== 'production') {
-      this.logger.log(
-        `OAuth ${provider} accessToken=${result.data.accessToken} refreshToken=${result.data.refreshToken}`
-      );
-    }
     return result;
   }
 
@@ -162,7 +199,7 @@ export class AuthService implements IAuthService {
   private async generateToken(
     user: UserEntity,
     response: Response,
-    session: { expirationTime: number; refreshTime: number; sameSite: AppConfig['cookie']['sameSite']; maxAge: number }
+    session: AuthTokenSession
   ): Promise<SuccessResponse<AuthTokens>> {
     const payload: JwtPayload = {
       id: user.id,
@@ -188,6 +225,14 @@ export class AuthService implements IAuthService {
         ttl: session.refreshTime * 1000,
       },
     ]);
+
+    await this.persistUserSession({
+      userId: user.id,
+      accessJti,
+      refreshJti,
+      refreshTime: session.refreshTime,
+      deviceName: session.deviceName,
+    });
 
     response.cookie(Token.REFRESH, refreshToken, {
       httpOnly: true,
@@ -223,7 +268,11 @@ export class AuthService implements IAuthService {
     return { accessToken, refreshToken, accessJti, refreshJti };
   }
 
-  async refreshToken(authTokens: AuthTokens, response: Response): Promise<SuccessResponse<AuthTokens>> {
+  async refreshToken(
+    authTokens: AuthTokens,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>> {
     const {
       jwt: { expirationTime, refreshTime },
       cookie: { sameSite, maxAge },
@@ -282,6 +331,15 @@ export class AuthService implements IAuthService {
 
     this.cacheService.setMany(setCache);
 
+    await this.persistUserSession({
+      userId: user.id,
+      accessJti,
+      refreshJti,
+      refreshTime,
+      deviceName,
+      previousRefreshJti: refreshPayload.jti,
+    });
+
     return new SuccessResponse({
       data: { accessToken, refreshToken },
       message: await this.i18n.t('auth.refresh_token_success'),
@@ -323,9 +381,102 @@ export class AuthService implements IAuthService {
 
     this.cacheService.setMany(setCacheBlacklist);
 
+    if (refreshPayload.jti) {
+      await this.userSessionRepo.update(
+        { refreshJti: refreshPayload.jti, revokedAt: IsNull() },
+        { revokedAt: new Date() }
+      );
+    }
+
     return new SuccessResponse({
       data: { success: true },
       message: await this.i18n.t('auth.logout_success'),
     });
+  }
+
+  async changePassword(
+    userId: string,
+    accessJti: string | undefined,
+    dto: ChangePasswordDto
+  ): Promise<SuccessResponse<Result>> {
+    const user = await this.userService.getOne({ where: { id: userId } });
+    if (!user?.password) {
+      throw new UnauthorizedException(await this.i18n.t('auth.invalid_password'));
+    }
+
+    const matches = await verify(user.password, dto.currentPassword);
+    if (!matches) {
+      throw new UnauthorizedException(await this.i18n.t('auth.invalid_password'));
+    }
+
+    await this.userService.updateUserById(userId, { password: dto.newPassword });
+
+    if (dto.logoutAll) {
+      await this.revokeOtherSessions(userId, accessJti);
+    }
+
+    return new SuccessResponse({
+      data: { success: true },
+      message: await this.i18n.t('auth.change_password_success'),
+    });
+  }
+
+  private async persistUserSession(params: PersistUserSessionParams): Promise<void> {
+    const expiresAt = new Date(Date.now() + params.refreshTime * 1000);
+    const deviceName = params.deviceName?.slice(0, 255) || null;
+
+    if (params.previousRefreshJti) {
+      const updated = await this.userSessionRepo.update(
+        { refreshJti: params.previousRefreshJti, revokedAt: IsNull() },
+        {
+          accessJti: params.accessJti,
+          refreshJti: params.refreshJti,
+          expiresAt,
+          ...(deviceName ? { deviceName } : {}),
+        }
+      );
+      if (updated.affected) return;
+    }
+
+    await this.userSessionRepo.save({
+      userId: params.userId,
+      accessJti: params.accessJti,
+      refreshJti: params.refreshJti,
+      deviceName,
+      expiresAt,
+    });
+  }
+
+  private async revokeOtherSessions(userId: string, accessJti?: string): Promise<void> {
+    const where = {
+      userId,
+      revokedAt: IsNull(),
+      ...(accessJti ? { accessJti: Not(accessJti) } : {}),
+    };
+    const others = await this.userSessionRepo.find({ where });
+    if (!others.length) return;
+
+    await this.userSessionRepo.update(where, { revokedAt: new Date() });
+
+    const whitelistKeys = others.flatMap((session) => [
+      `${AccessControlLists.WHITE}:${Token.ACCESS}:${session.accessJti}`,
+      `${AccessControlLists.WHITE}:${Token.REFRESH}:${session.refreshJti}`,
+    ]);
+    const blacklistTtl = 7 * 24 * 60 * 60 * 1000;
+    const blacklist = others.flatMap((session) => [
+      {
+        key: `${AccessControlLists.BLACK}:${Token.ACCESS}:${session.accessJti}`,
+        value: 'revoked',
+        ttl: blacklistTtl,
+      },
+      {
+        key: `${AccessControlLists.BLACK}:${Token.REFRESH}:${session.refreshJti}`,
+        value: 'revoked',
+        ttl: blacklistTtl,
+      },
+    ]);
+
+    this.cacheService.deleteMany(whitelistKeys);
+    this.cacheService.setMany(blacklist);
   }
 }

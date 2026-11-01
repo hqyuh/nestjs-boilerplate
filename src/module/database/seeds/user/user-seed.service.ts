@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserSessionEntity } from '@/apis/auth/entities/user-session.entity';
 import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { UserEntity } from '@/apis/user/entities/user.entity';
+
+const IPHONE_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const MAC_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36';
 
 @Injectable()
 export class UserSeedService {
@@ -10,7 +16,9 @@ export class UserSeedService {
     @InjectRepository(UserEntity)
     private repository: Repository<UserEntity>,
     @InjectRepository(RoleEntity)
-    private roleRepository: Repository<RoleEntity>
+    private roleRepository: Repository<RoleEntity>,
+    @InjectRepository(UserSessionEntity)
+    private sessionRepository: Repository<UserSessionEntity>
   ) {}
 
   async run() {
@@ -232,6 +240,7 @@ export class UserSeedService {
     }
 
     await this.ensureE2ePasswords();
+    await this.ensureDevicesTestUser();
   }
 
   /** E2E logs in as these users with 123456 even when auto-seed skipped the empty-table insert. */
@@ -264,5 +273,47 @@ export class UserSeedService {
         })
       );
     }
+  }
+
+  /** Multi-device / change-password test account with iPhone + MacBook sessions. */
+  private async ensureDevicesTestUser() {
+    const userRole = await this.roleRepository.findOne({ where: { name: 'User' } });
+    if (!userRole) return;
+
+    let user = await this.repository.findOne({ where: { email: 'devices@example.com' } });
+    if (user) {
+      user.password = 'password1';
+      await this.repository.save(user);
+    } else {
+      user = await this.repository.save(
+        this.repository.create({
+          email: 'devices@example.com',
+          firstName: 'Demo',
+          lastName: 'Devices',
+          password: 'password1',
+          roleId: userRole.id,
+          emailVerifiedAt: new Date(),
+        })
+      );
+    }
+
+    await this.sessionRepository.delete({ userId: user.id });
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.sessionRepository.save([
+      this.sessionRepository.create({
+        userId: user.id,
+        refreshJti: 'iphone-refresh-jti',
+        accessJti: 'iphone-access-jti',
+        deviceName: IPHONE_UA,
+        expiresAt,
+      }),
+      this.sessionRepository.create({
+        userId: user.id,
+        refreshJti: 'macbook-refresh-jti',
+        accessJti: 'macbook-access-jti',
+        deviceName: MAC_UA,
+        expiresAt,
+      }),
+    ]);
   }
 }

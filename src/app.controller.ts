@@ -19,7 +19,7 @@ export class AppController {
   }
 
   @Get('rbac-admin')
-  @ApiBearerAuth()
+  @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.MANAGE, subject: UserEntity })
   createRBACAdmin(): string {
@@ -28,7 +28,7 @@ export class AppController {
   }
 
   @Get('rbac-user')
-  @ApiBearerAuth()
+  @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.GET, subject: 'all' })
   getRBACUser(): string {

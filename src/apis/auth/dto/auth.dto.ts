@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { IsEmail, IsNotEmpty, IsString } from '@/common/decorator/validation.decorator';
 
 export class LoginDTO {
@@ -76,6 +76,25 @@ export class OauthProfileDto {
   accessToken?: string;
   refreshToken?: string;
   idToken?: string;
+}
+
+export class ChangePasswordDto {
+  @ApiProperty({ description: 'Current password' })
+  @IsString()
+  @IsNotEmpty()
+  currentPassword: string;
+
+  @ApiProperty({ description: 'New password' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(50)
+  newPassword: string;
+
+  @ApiProperty({ description: 'Revoke sessions on other devices', required: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  logoutAll?: boolean;
 }
 
 export class AuthTokens {

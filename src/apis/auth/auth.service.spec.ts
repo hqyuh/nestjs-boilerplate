@@ -13,10 +13,15 @@ import { IJwtService } from '@/module/jwt/jwt.interface';
 import { UserEntity } from '../user/entities/user.entity';
 import { IUserService } from '../user/interface/user.interface';
 import { AuthService } from './auth.service';
-import { AuthTokens, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
+import { AuthTokens, ChangePasswordDto, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
 import { OAuthAccountEntity } from './entities/oauth-account.entity';
+import { UserSessionEntity } from './entities/user-session.entity';
 import { FacebookTokenVerifier } from './facebook-token.verifier';
 import { GoogleTokenVerifier } from './google-token.verifier';
+
+vi.mock('argon2', () => ({
+  verify: vi.fn(),
+}));
 
 vi.mock('node:crypto', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:crypto')>();
@@ -40,6 +45,7 @@ vi.mock('@/common/logger/logger', () => ({
 }));
 
 import { randomUUID } from 'node:crypto';
+import { verify } from 'argon2';
 
 const APP_CONFIG = {
   jwt: {
@@ -70,6 +76,11 @@ describe('AuthService', () => {
     findOne: ReturnType<typeof vi.fn>;
     save: ReturnType<typeof vi.fn>;
     manager: { update: ReturnType<typeof vi.fn> };
+  };
+  let userSessionRepo: {
+    save: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    find: ReturnType<typeof vi.fn>;
   };
   let googleTokenVerifier: Mocked<Pick<GoogleTokenVerifier, 'verify'>>;
   let facebookTokenVerifier: Mocked<Pick<FacebookTokenVerifier, 'verify'>>;
@@ -114,6 +125,11 @@ describe('AuthService', () => {
       save: vi.fn(),
       manager: { update: vi.fn().mockResolvedValue({ affected: 1 }) },
     };
+    userSessionRepo = {
+      save: vi.fn().mockResolvedValue({}),
+      update: vi.fn().mockResolvedValue({ affected: 1 }),
+      find: vi.fn().mockResolvedValue([]),
+    };
     googleTokenVerifier = {
       verify: vi.fn(),
     };
@@ -129,6 +145,7 @@ describe('AuthService', () => {
         { provide: ICacheService, useValue: cacheService },
         { provide: IUserService, useValue: userService },
         { provide: getRepositoryToken(OAuthAccountEntity), useValue: oauthAccountRepo },
+        { provide: getRepositoryToken(UserSessionEntity), useValue: userSessionRepo },
         { provide: GoogleTokenVerifier, useValue: googleTokenVerifier },
         { provide: FacebookTokenVerifier, useValue: facebookTokenVerifier },
         { provide: I18nService, useValue: i18n },
@@ -207,6 +224,70 @@ describe('AuthService', () => {
       });
       expect(result.data).toEqual({ accessToken: 'access-token', refreshToken: 'refresh-token' });
       expect(result.messages).toBe('auth.login_success');
+    });
+
+    it('persists a device session on login', async () => {
+      configService.getOrThrow.mockImplementation((key: string) => {
+        if (key === 'app') return APP_CONFIG;
+        if (key === 'app.jwt') return APP_CONFIG.jwt;
+        return undefined;
+      });
+      userService.validateUserByEmailPassword.mockResolvedValue(mockUser as never);
+      jwtService.sign.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+
+      await service.login(loginDto, buildMockResponse(), 'iPhone');
+
+      expect(userSessionRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-id',
+          accessJti: 'access-jti',
+          refreshJti: 'refresh-jti',
+          deviceName: 'iPhone',
+        })
+      );
+    });
+
+    it('creates a separate session when the same user logs in on another device', async () => {
+      configService.getOrThrow.mockImplementation((key: string) => {
+        if (key === 'app') return APP_CONFIG;
+        if (key === 'app.jwt') return APP_CONFIG.jwt;
+        return undefined;
+      });
+      userService.validateUserByEmailPassword.mockResolvedValue(mockUser as never);
+      jwtService.sign
+        .mockResolvedValueOnce('iphone-access')
+        .mockResolvedValueOnce('iphone-refresh')
+        .mockResolvedValueOnce('mac-access')
+        .mockResolvedValueOnce('mac-refresh');
+      vi.mocked(randomUUID)
+        .mockReset()
+        .mockReturnValueOnce('iphone-access-jti' as ReturnType<typeof randomUUID>)
+        .mockReturnValueOnce('iphone-refresh-jti' as ReturnType<typeof randomUUID>)
+        .mockReturnValueOnce('mac-access-jti' as ReturnType<typeof randomUUID>)
+        .mockReturnValueOnce('mac-refresh-jti' as ReturnType<typeof randomUUID>);
+
+      const iphone = await service.login(loginDto, buildMockResponse(), 'iPhone');
+      const mac = await service.login(loginDto, buildMockResponse(), 'MacBook');
+
+      expect(iphone.data.accessToken).toBe('iphone-access');
+      expect(mac.data.accessToken).toBe('mac-access');
+      expect(iphone.data.accessToken).not.toBe(mac.data.accessToken);
+      expect(userSessionRepo.save).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          userId: 'user-id',
+          deviceName: 'iPhone',
+          refreshJti: 'iphone-refresh-jti',
+        })
+      );
+      expect(userSessionRepo.save).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          userId: 'user-id',
+          deviceName: 'MacBook',
+          refreshJti: 'mac-refresh-jti',
+        })
+      );
     });
   });
 
@@ -511,6 +592,13 @@ describe('AuthService', () => {
       ]);
       expect(result.data).toEqual({ accessToken: 'new-access', refreshToken: 'new-refresh' });
       expect(result.messages).toBe('auth.refresh_token_success');
+      expect(userSessionRepo.update).toHaveBeenCalledWith(
+        { refreshJti: 'old-refresh-jti', revokedAt: expect.anything() },
+        expect.objectContaining({
+          accessJti: 'access-jti',
+          refreshJti: 'refresh-jti',
+        })
+      );
     });
   });
 
@@ -556,6 +644,68 @@ describe('AuthService', () => {
       ]);
       expect(result.data).toEqual({ success: true });
       expect(result.messages).toBe('auth.logout_success');
+      expect(userSessionRepo.update).toHaveBeenCalledWith(
+        { refreshJti: 'refresh-jti', revokedAt: expect.anything() },
+        { revokedAt: expect.any(Date) }
+      );
+    });
+  });
+
+  describe('changePassword', () => {
+    const dto: ChangePasswordDto = {
+      currentPassword: 'password1',
+      newPassword: 'password2',
+    };
+    const user = {
+      id: 'user-id',
+      email: 'user@example.com',
+      password: 'hashed-password',
+    };
+
+    beforeEach(() => {
+      userService.getOne.mockResolvedValue(user as never);
+      vi.mocked(verify).mockResolvedValue(true as never);
+      userService.updateUserById.mockResolvedValue(user as never);
+    });
+
+    it('rejects an incorrect current password', async () => {
+      vi.mocked(verify).mockResolvedValue(false as never);
+
+      await expect(service.changePassword(user.id, 'access-jti', dto)).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(userService.updateUserById).not.toHaveBeenCalled();
+      expect(userSessionRepo.find).not.toHaveBeenCalled();
+    });
+
+    it('updates the password and keeps other device sessions', async () => {
+      const result = await service.changePassword(user.id, 'access-jti', dto);
+
+      expect(userService.updateUserById).toHaveBeenCalledWith(user.id, { password: dto.newPassword });
+      expect(userSessionRepo.find).not.toHaveBeenCalled();
+      expect(result.data).toEqual({ success: true });
+      expect(result.messages).toBe('auth.change_password_success');
+    });
+
+    it('revokes every other session when logoutAll is true', async () => {
+      userSessionRepo.find.mockResolvedValue([{ accessJti: 'other-access-jti', refreshJti: 'other-refresh-jti' }]);
+
+      await service.changePassword(user.id, 'access-jti', { ...dto, logoutAll: true });
+
+      expect(userService.updateUserById).toHaveBeenCalledWith(user.id, { password: dto.newPassword });
+      expect(userSessionRepo.update).toHaveBeenCalledWith(expect.objectContaining({ userId: user.id }), {
+        revokedAt: expect.any(Date),
+      });
+      expect(cacheService.deleteMany).toHaveBeenCalledWith([
+        `${AccessControlLists.WHITE}:${Token.ACCESS}:other-access-jti`,
+        `${AccessControlLists.WHITE}:${Token.REFRESH}:other-refresh-jti`,
+      ]);
+      expect(cacheService.setMany).toHaveBeenCalledWith([
+        expect.objectContaining({
+          key: `${AccessControlLists.BLACK}:${Token.ACCESS}:other-access-jti`,
+        }),
+        expect.objectContaining({
+          key: `${AccessControlLists.BLACK}:${Token.REFRESH}:other-refresh-jti`,
+        }),
+      ]);
     });
   });
 });

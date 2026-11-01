@@ -34,17 +34,26 @@ declare global {
     filter?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
   };
 
+  type IPaginationMeta = {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+
+  type IPaginationLinks = {
+    first?: string;
+    previous?: string;
+    current: string;
+    next?: string;
+    last?: string;
+  };
+
   type IPaginationResponse<T> = {
     /** Array of items */
     data: T[];
-    pagination: {
-      /** Number of items per page */
-      limit: number;
-      /** Current page number */
-      page: number;
-      /** Total number of items */
-      total: number;
-    };
+    pagination: IPaginationMeta;
+    links?: IPaginationLinks;
   };
 
   type IResponse<T> = {
@@ -54,15 +63,8 @@ declare global {
     message: string;
     /** Data */
     data: T;
-    /** Paginated data */
-    pagination?: {
-      /** Number of items per page */
-      limit: number;
-      /** Current page number */
-      page: number;
-      /** Total number of items */
-      total: number;
-    };
+    pagination?: IPaginationMeta;
+    links?: IPaginationLinks;
     path: string;
     method: string;
     timestamp: string;

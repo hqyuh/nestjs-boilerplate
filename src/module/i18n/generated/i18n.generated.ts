@@ -10,6 +10,8 @@ export type I18nTranslations = {
         "register_success": string;
         "refresh_token_success": string;
         "logout_success": string;
+        "change_password_success": string;
+        "invalid_password": string;
         "conflict_user": string;
         "access_denied": string;
     };

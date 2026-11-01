@@ -1,5 +1,5 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { map, Observable } from 'rxjs';
 
 @Injectable()
@@ -26,6 +26,7 @@ export class FormatResponseInterceptor implements NestInterceptor {
             data: data.data,
             message: data.messages,
             pagination: data.pagination,
+            links: data.links,
             ...responseCommon,
           };
         }

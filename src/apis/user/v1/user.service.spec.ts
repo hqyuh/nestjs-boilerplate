@@ -39,6 +39,7 @@ const buildEntity = (overrides: Partial<UserEntity> = {}): UserEntity => {
 
 describe('UserService (v1)', () => {
   let service: UserService;
+  let userRepository: UserRepository;
   let userRepo: Mocked<Repository<UserEntity>>;
   let roleRepo: Mocked<Repository<RoleEntity>>;
   let cacheService: Mocked<ICacheService>;
@@ -74,6 +75,7 @@ describe('UserService (v1)', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
+    userRepository = module.get(UserRepository);
   });
 
   afterEach(() => vi.clearAllMocks());
@@ -164,12 +166,12 @@ describe('UserService (v1)', () => {
   describe('getAllUserPaginated', () => {
     it('returns paginated response from repository', async () => {
       const data = [buildEntity()];
-      userRepo.findAndCount.mockResolvedValue([data, 1]);
+      const expected = { data, pagination: { page: 1, limit: 10, totalItems: 1, totalPages: 1 } };
+      vi.spyOn(userRepository, 'paginateAll').mockResolvedValue(expected);
 
-      const result = await service.getAllUserPaginated({ limit: 10, page: 1 } as never);
+      const result = await service.getAllUserPaginated({ page: 1, limit: 10, path: '/' });
 
-      expect(userRepo.findAndCount).toHaveBeenCalled();
-      expect(result).toEqual({ data, pagination: { limit: 10, page: 1, total: 1 } });
+      expect(result).toEqual(expected);
     });
   });
 

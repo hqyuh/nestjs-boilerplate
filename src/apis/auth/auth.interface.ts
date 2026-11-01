@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { SuccessResponse } from '@/common/base/success-response';
 import { Result } from '@/common/types/auth.dto';
 
-import { AuthTokens, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
+import { AuthTokens, ChangePasswordDto, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.dto';
 
 /**
  * Nest cannot inject an interface: TypeScript erases it at runtime.
@@ -12,12 +12,41 @@ import { AuthTokens, LoginDTO, OauthProfileDto, RegisterDTO } from './dto/auth.d
 export const IAuthService = Symbol('IAuthService');
 
 export interface IAuthService {
-  login(loginUserDto: LoginDTO, response: Response): Promise<SuccessResponse<AuthTokens>>;
+  login(loginUserDto: LoginDTO, response: Response, deviceName?: string): Promise<SuccessResponse<AuthTokens>>;
+
   register(registerDto: RegisterDTO): Promise<SuccessResponse<Result>>;
-  loginWithGoogle(profile: OauthProfileDto, response: Response): Promise<SuccessResponse<AuthTokens>>;
-  loginWithGoogleIdToken(idToken: string, response: Response): Promise<SuccessResponse<AuthTokens>>;
-  loginWithFacebook(profile: OauthProfileDto, response: Response): Promise<SuccessResponse<AuthTokens>>;
-  loginWithFacebookAccessToken(accessToken: string, response: Response): Promise<SuccessResponse<AuthTokens>>;
-  refreshToken(authTokens: AuthTokens, response: Response): Promise<SuccessResponse<AuthTokens>>;
+
+  loginWithGoogle(
+    profile: OauthProfileDto,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>>;
+
+  loginWithGoogleIdToken(
+    idToken: string,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>>;
+
+  loginWithFacebook(
+    profile: OauthProfileDto,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>>;
+
+  loginWithFacebookAccessToken(
+    accessToken: string,
+    response: Response,
+    deviceName?: string
+  ): Promise<SuccessResponse<AuthTokens>>;
+
+  refreshToken(authTokens: AuthTokens, response: Response, deviceName?: string): Promise<SuccessResponse<AuthTokens>>;
+
   logout(authTokens: AuthTokens): Promise<SuccessResponse<Result>>;
+
+  changePassword(
+    userId: string,
+    accessJti: string | undefined,
+    dto: ChangePasswordDto
+  ): Promise<SuccessResponse<Result>>;
 }

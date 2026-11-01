@@ -5,6 +5,7 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { ApiController } from '@/common/base/base.swagger';
 import { SuccessResponse } from '@/common/base/success-response';
+import { User } from '@/common/decorator/user.decorator';
 import { FacebookConfig, GoogleConfig } from '@/module/configs/interfaces/config.interface';
 
 import { AuthStrategy } from './auth.const';
@@ -12,6 +13,7 @@ import { IAuthService } from './auth.interface';
 import { CookieJwt } from './decorator/cookie-jwt.decorator';
 import {
   AuthTokens,
+  ChangePasswordDto,
   FacebookAccessTokenDto,
   GoogleIdTokenDto,
   LoginDTO,
@@ -21,7 +23,7 @@ import {
 
 @Controller({ path: 'auth', version: ['1', '2'] })
 @ApiController('Auth')
-@ApiBearerAuth()
+@ApiBearerAuth('accessToken')
 export class AuthController {
   constructor(
     @Inject(IAuthService) private readonly authService: IAuthService,
@@ -30,8 +32,8 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async loginUser(@Body() loginDto: LoginDTO, @Res({ passthrough: true }) response: Response) {
-    return this.authService.login(loginDto, response);
+  async loginUser(@Body() loginDto: LoginDTO, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(loginDto, response, request.headers['user-agent']);
   }
 
   @Post('register')
@@ -47,7 +49,7 @@ export class AuthController {
       'Open this URL in the browser to redirect to Google. Swagger Try it out returns the Google URL as JSON because fetch cannot follow that redirect.',
   })
   googleAuth(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    const url = this.buildGoogleAuthorizationUrl();
+    const url = this.googleAuthUrl();
     if (request.headers['sec-fetch-mode'] === 'navigate') {
       response.redirect(url);
       return;
@@ -62,16 +64,24 @@ export class AuthController {
   @ApiOperation({ summary: 'Google OAuth callback for web (Google redirects here)' })
   @UseGuards(AuthGuard(AuthStrategy.GOOGLE))
   async googleCallback(@Req() request: Request, @Res() response: Response) {
-    const result = await this.authService.loginWithGoogle(request.user as OauthProfileDto, response);
+    const result = await this.authService.loginWithGoogle(
+      request.user as OauthProfileDto,
+      response,
+      request.headers['user-agent']
+    );
     const { frontendRedirect } = this.configService.getOrThrow<GoogleConfig>('app.google');
-    return this.finishOauthWebCallback(request, response, result, frontendRedirect);
+    return this.oauthWebCallback(request, response, result, frontendRedirect);
   }
 
   @Post('google/mobile')
   @HttpCode(200)
   @ApiOperation({ summary: 'Google login for mobile — send idToken from Google Sign-In SDK' })
-  async googleMobileAuth(@Body() dto: GoogleIdTokenDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.loginWithGoogleIdToken(dto.idToken, response);
+  async googleMobileAuth(
+    @Body() dto: GoogleIdTokenDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.loginWithGoogleIdToken(dto.idToken, response, request.headers['user-agent']);
   }
 
   @Get('facebook')
@@ -81,7 +91,7 @@ export class AuthController {
       'Open this URL in the browser to redirect to Facebook. Swagger Try it out returns the Facebook URL as JSON because fetch cannot follow that redirect.',
   })
   facebookAuth(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    const url = this.buildFacebookAuthorizationUrl();
+    const url = this.facebookAuthUrl();
     if (request.headers['sec-fetch-mode'] === 'navigate') {
       response.redirect(url);
       return;
@@ -96,23 +106,35 @@ export class AuthController {
   @ApiOperation({ summary: 'Facebook OAuth callback for web (Facebook redirects here)' })
   @UseGuards(AuthGuard(AuthStrategy.FACEBOOK))
   async facebookCallback(@Req() request: Request, @Res() response: Response) {
-    const result = await this.authService.loginWithFacebook(request.user as OauthProfileDto, response);
+    const result = await this.authService.loginWithFacebook(
+      request.user as OauthProfileDto,
+      response,
+      request.headers['user-agent']
+    );
     const { frontendRedirect } = this.configService.getOrThrow<FacebookConfig>('app.facebook');
-    return this.finishOauthWebCallback(request, response, result, frontendRedirect);
+    return this.oauthWebCallback(request, response, result, frontendRedirect);
   }
 
   @Post('facebook/mobile')
   @HttpCode(200)
   @ApiOperation({ summary: 'Facebook login for mobile — send accessToken from Facebook Login SDK' })
-  async facebookMobileAuth(@Body() dto: FacebookAccessTokenDto, @Res({ passthrough: true }) response: Response) {
-    return this.authService.loginWithFacebookAccessToken(dto.accessToken, response);
+  async facebookMobileAuth(
+    @Body() dto: FacebookAccessTokenDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.loginWithFacebookAccessToken(dto.accessToken, response, request.headers['user-agent']);
   }
 
   @Post('refresh-token')
   @HttpCode(200)
   @UseGuards(AuthGuard(AuthStrategy.USER_RF_JWT))
-  async refreshToken(@CookieJwt() authTokens: AuthTokens, @Res({ passthrough: true }) response: Response) {
-    return this.authService.refreshToken(authTokens, response);
+  async refreshToken(
+    @CookieJwt() authTokens: AuthTokens,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.refreshToken(authTokens, response, request.headers['user-agent']);
   }
 
   @Get('logout')
@@ -122,7 +144,15 @@ export class AuthController {
     return this.authService.logout(authTokens);
   }
 
-  private finishOauthWebCallback(
+  @Post('change-password')
+  @HttpCode(200)
+  @UseGuards(AuthGuard(AuthStrategy.USER_JWT))
+  @ApiOperation({ summary: 'Change password. Set logoutAll to revoke other device sessions.' })
+  async changePassword(@User() user: UserJwtPayload, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.id, user.jti, dto);
+  }
+
+  private oauthWebCallback(
     request: Request,
     response: Response,
     result: SuccessResponse<AuthTokens>,
@@ -141,7 +171,7 @@ export class AuthController {
     });
   }
 
-  private buildGoogleAuthorizationUrl(): string {
+  private googleAuthUrl(): string {
     const google = this.configService.getOrThrow<GoogleConfig>('app.google');
     const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     url.searchParams.set('client_id', google.clientId);
@@ -151,7 +181,7 @@ export class AuthController {
     return url.toString();
   }
 
-  private buildFacebookAuthorizationUrl(): string {
+  private facebookAuthUrl(): string {
     const facebook = this.configService.getOrThrow<FacebookConfig>('app.facebook');
     const url = new URL('https://www.facebook.com/v21.0/dialog/oauth');
     url.searchParams.set('client_id', facebook.appId);

@@ -1,6 +1,7 @@
 import { hash } from 'argon2';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OAuthAccountEntity } from '@/apis/auth/entities/oauth-account.entity';
+import { UserSessionEntity } from '@/apis/auth/entities/user-session.entity';
 import { RoleEntity } from '@/apis/roles/entities/role.entity';
 import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 
@@ -44,6 +45,12 @@ export class UserEntity extends BaseUuidEntity {
     (oauthAccount) => oauthAccount.user
   )
   oauthAccounts: OAuthAccountEntity[];
+
+  @OneToMany(
+    () => UserSessionEntity,
+    (session) => session.user
+  )
+  sessions: UserSessionEntity[];
 
   /**
    * Hash the password before saving/updating the user to the database

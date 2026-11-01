@@ -131,13 +131,26 @@ describe.each(['1', '2'])('User API v%s (e2e)', (version) => {
 
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data.length).toBeGreaterThan(0);
-    expect(body.pagination).toEqual(
-      expect.objectContaining({
-        page: 1,
-        limit: 10,
-        total: expect.any(Number),
-      })
-    );
+    expect(body.pagination).toEqual({
+      page: 1,
+      limit: 10,
+      totalItems: expect.any(Number),
+      totalPages: expect.any(Number),
+    });
+    expect(body.links.current).toContain(`/api/v${version}/user?`);
+    expect(body.links.first).toContain('page=1');
+    expect(body.links.previous).toBeUndefined();
+    expect(body.links.next === undefined || typeof body.links.next === 'string').toBe(true);
+    expect(body.links.last).toContain('page=');
+  });
+
+  it('rejects an unknown filter field', async () => {
+    const { body } = await http(app)
+      .get(`${API}/v${version}/user`)
+      .query({ 'filter.firstName1': 'Admin' })
+      .set(authHeader(accessToken, cookies))
+      .expect(400);
+    expect(body.message).toBe("Column 'firstName1' is not filterable");
   });
 
   it('gets, updates, and deletes a user created via register', async () => {

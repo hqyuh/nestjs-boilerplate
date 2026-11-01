@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { verify } from 'argon2';
+import { PaginateQuery } from 'nestjs-paginate';
 import { DeepPartial, Repository } from 'typeorm';
 import { RoleEntity } from '@/apis/roles/entities/role.entity';
-import { PaginationDto } from '@/common/base/base.dto';
-import { BaseUuidEntity } from '@/common/base/base-uuid.entity';
 
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserByIdDto } from '../dto/update-user-by-id.dto';
@@ -57,8 +56,8 @@ export class UserService implements IUserService {
     });
   }
 
-  async getAllUserPaginated(query: PaginationDto<BaseUuidEntity>): Promise<IPaginationResponse<UserEntity>> {
-    return this.userRepository.getAllPaginated(query);
+  async getAllUserPaginated(query: PaginateQuery): Promise<IPaginationResponse<UserEntity>> {
+    return this.userRepository.paginateAll(query);
   }
 
   async getOneUserById(id: string) {

@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { PaginationDto } from '@/common/base/base.dto';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { ApiController, ApiCreate, ApiDelete, ApiGetAll, ApiGetOne, ApiUpdate } from '@/common/base/base.swagger';
 import { CheckAbilities } from '@/module/ability/abilities.decorator';
 import { AbilitiesGuard } from '@/module/ability/abilities.guard';
@@ -12,14 +12,15 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserByIdDto } from '../dto/update-user-by-id.dto';
 import { UserEntity } from '../entities/user.entity';
 import { IUserService } from '../interface/user.interface';
+import { userPaginateConfig } from '../user.paginate';
 
 @Controller({ path: 'user', version: '2' })
 @ApiController('User')
+@ApiBearerAuth('accessToken')
 export class UserController {
   constructor(@Inject(IUserService) private readonly userService: IUserService) {}
 
   @Post()
-  @ApiBearerAuth()
   @ApiCreate(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.CREATE, subject: UserEntity })
@@ -28,16 +29,14 @@ export class UserController {
   }
 
   @Get()
-  @ApiBearerAuth()
-  @ApiGetAll(UserEntity, 'User')
+  @ApiGetAll(UserEntity, 'User', userPaginateConfig)
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.GET, subject: 'all' })
-  getAll(@Query() query: PaginationDto) {
+  getAll(@Paginate() query: PaginateQuery) {
     return this.userService.getAllUserPaginated(query);
   }
 
   @Get(':id')
-  @ApiBearerAuth()
   @ApiGetOne(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.GET, subject: UserEntity })
@@ -46,7 +45,6 @@ export class UserController {
   }
 
   @Patch(':id')
-  @ApiBearerAuth()
   @ApiUpdate(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.UPDATE, subject: UserEntity })
@@ -55,7 +53,6 @@ export class UserController {
   }
 
   @Delete(':id')
-  @ApiBearerAuth()
   @ApiDelete(UserEntity, 'User')
   @UseGuards(AuthGuard(AuthStrategy.USER_JWT), AbilitiesGuard)
   @CheckAbilities({ action: PermissionEnum.DELETE, subject: UserEntity })

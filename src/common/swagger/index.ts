@@ -2,6 +2,7 @@ import { INestApplication, Logger } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { GLOBAL_PATH } from '@/common/constant/route.constant';
 
+import { addDefaultResponses } from './default-responses';
 import {
   SWAGGER_API_CURRENT_VERSION,
   SWAGGER_API_DESCRIPTION,
@@ -28,11 +29,6 @@ export const setupSwagger = (app: INestApplication) => {
     .setVersion(SWAGGER_API_CURRENT_VERSION)
     .setOpenAPIVersion('3.1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'refreshToken')
-    .addCookieAuth('token', {
-      name: 'refresh-token',
-      type: 'apiKey',
-    })
     .build();
 
   const swaggerSetupOptions = {
@@ -52,7 +48,7 @@ export const setupSwagger = (app: INestApplication) => {
     },
   } satisfies Parameters<typeof SwaggerModule.setup>[3];
 
-  const fullDocument = SwaggerModule.createDocument(app, options);
+  const fullDocument = addDefaultResponses(SwaggerModule.createDocument(app, options));
 
   const v1Document = filterDocumentByPrefix(fullDocument, `/${GLOBAL_PATH}/v1`);
   const v2Document = filterDocumentByPrefix(fullDocument, `/${GLOBAL_PATH}/v2`);

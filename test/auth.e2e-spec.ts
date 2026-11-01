@@ -96,6 +96,69 @@ describe.each(['1', '2'])('Auth API v%s (e2e)', (version) => {
     await http(app).get(`${API}/v1/rbac-admin`).set(authHeader(accessToken, cookies)).expect(401);
   });
 
+  it('keeps other devices signed in when change-password omits logoutAll', async () => {
+    const email = `e2e.pw.keep.v${version}.${stamp}@example.com`;
+    await http(app)
+      .post(`${API}/v${version}/auth/register`)
+      .send({ email, password: 'password1', firstName: 'Keep', lastName: 'Session' })
+      .expect(201);
+
+    const deviceA = await http(app)
+      .post(`${API}/v${version}/auth/login`)
+      .set('User-Agent', 'iPhone')
+      .send({ email, password: 'password1' })
+      .expect(200);
+    const deviceB = await http(app)
+      .post(`${API}/v${version}/auth/login`)
+      .set('User-Agent', 'MacBook')
+      .send({ email, password: 'password1' })
+      .expect(200);
+
+    const tokenA = deviceA.body.data.accessToken as string;
+    const tokenB = deviceB.body.data.accessToken as string;
+    const { id } = JSON.parse(Buffer.from(tokenA.split('.')[1], 'base64url').toString()) as { id: string };
+
+    await http(app)
+      .post(`${API}/v${version}/auth/change-password`)
+      .set(authHeader(tokenA))
+      .send({ currentPassword: 'password1', newPassword: 'password2' })
+      .expect(200);
+
+    await http(app).get(`${API}/v${version}/user/${id}`).set(authHeader(tokenB)).expect(200);
+  });
+
+  it('revokes other devices when change-password sets logoutAll', async () => {
+    const email = `e2e.pw.kick.v${version}.${stamp}@example.com`;
+    await http(app)
+      .post(`${API}/v${version}/auth/register`)
+      .send({ email, password: 'password1', firstName: 'Kick', lastName: 'Session' })
+      .expect(201);
+
+    const deviceA = await http(app)
+      .post(`${API}/v${version}/auth/login`)
+      .set('User-Agent', 'iPhone')
+      .send({ email, password: 'password1' })
+      .expect(200);
+    const deviceB = await http(app)
+      .post(`${API}/v${version}/auth/login`)
+      .set('User-Agent', 'MacBook')
+      .send({ email, password: 'password1' })
+      .expect(200);
+
+    const tokenA = deviceA.body.data.accessToken as string;
+    const tokenB = deviceB.body.data.accessToken as string;
+    const { id } = JSON.parse(Buffer.from(tokenA.split('.')[1], 'base64url').toString()) as { id: string };
+
+    await http(app)
+      .post(`${API}/v${version}/auth/change-password`)
+      .set(authHeader(tokenA))
+      .send({ currentPassword: 'password1', newPassword: 'password2', logoutAll: true })
+      .expect(200);
+
+    await http(app).get(`${API}/v${version}/user/${id}`).set(authHeader(tokenB)).expect(401);
+    await http(app).get(`${API}/v${version}/user/${id}`).set(authHeader(tokenA)).expect(200);
+  });
+
   it('rejects an invalid Google ID token', async () => {
     await http(app).post(`${API}/v${version}/auth/google/mobile`).send({ idToken: 'not-a-google-token' }).expect(401);
   });

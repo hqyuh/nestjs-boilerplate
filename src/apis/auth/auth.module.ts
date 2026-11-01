@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { IAuthService } from './auth.interface';
 import { AuthService } from './auth.service';
 import { OAuthAccountEntity } from './entities/oauth-account.entity';
+import { UserSessionEntity } from './entities/user-session.entity';
 import { FacebookTokenVerifier } from './facebook-token.verifier';
 import { GoogleTokenVerifier } from './google-token.verifier';
 import { FacebookStrategy } from './strategies/facebook/facebook.strategy';
@@ -22,7 +23,7 @@ import { RefreshJwtStrategy } from './strategies/jwt/refresh-jwt.strategy';
     UserModule,
     CacheModule,
     JwtModule,
-    TypeOrmModule.forFeature([OAuthAccountEntity]),
+    TypeOrmModule.forFeature([OAuthAccountEntity, UserSessionEntity]),
   ],
   controllers: [AuthController],
   providers: [

@@ -10,17 +10,13 @@ export class TypeOrmFilter implements ExceptionFilter {
   catch(exception: TypeORMError, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse();
     const request = host.switchToHttp().getRequest();
-
-    const customResponse = {
+    this.logger.error(exception.message);
+    response.status(500).json({
       statusCode: 500,
       message: 'Internal Server Error (ORM)',
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-    } satisfies IResponseError;
-
-    this.logger.error(exception.message);
-    this.logger.error(JSON.stringify(exception));
-    response.status(customResponse.statusCode).json(customResponse);
+    } satisfies IResponseError);
   }
 }
